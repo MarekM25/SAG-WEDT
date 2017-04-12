@@ -31,7 +31,8 @@ class myActor extends Actor{
   def receive = {
     case "hello" => println("hello back at you")
     case _       => println("huh?")
-      var stories = getHeadlinesFromUrl("file:E:\\scala\\SAG-WEDT\\example_sites\\text ads sites\\running shoes - Yahoo Search Results.htm")
+      var stories = getHeadlinesFromUrl("file:D:\\Documents\\magisterka\\AdBlock\\data\\shoes - Yahoo Search Results.html")
+      stories.foreach(println);
   }
 }
 
@@ -39,7 +40,9 @@ object Main extends App{
   val system = ActorSystem("HelloSystem")
   // default Actor constructor
   val helloActor = system.actorOf(Props[myActor], name = "helloactor")
-  helloActor ! "hello"
-  helloActor ! "buenos dias"
+  val treeActor = system.actorOf(Props[TreeCreator],name = "treeCreator")
+  treeActor ! "create"
+  //helloActor ! "hello"
+  //helloActor ! "buenos dias"
 }
 
