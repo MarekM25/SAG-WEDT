@@ -1,4 +1,7 @@
 import java.net.URL
+
+import akka.actor.Actor.Receive
+import weka.classifiers.trees.RandomTree
 //import org.apache.commons.lang3.StringEscapeUtils
 
 import akka.actor.{Actor, ActorSystem, Props}
@@ -36,12 +39,28 @@ class myActor extends Actor{
   }
 }
 
+class TrainingActor extends Actor{
+  def buildNewTree = {
+    val treeActor = context.actorOf(Props[TreeCreator], name = "treeActor")
+    treeActor ! "D:\\Documents\\magisterka\\SAGWEDT\\data\\computers.csv"
+  //context.actorSelection("../treeActor") ! "D:\\Documents\\magisterka\\SAGWEDT\\data\\computers.csv" Tak się można dostać do aktora brata
+
+    //treeActor ! "create"
+  }
+  def receive= {
+    case x:RandomTree => println(x)
+    case _ => buildNewTree
+
+
+  }
+}
 object Main extends App{
   val system = ActorSystem("HelloSystem")
-  // default Actor constructor
+
+  val trainingActor = system.actorOf(Props[TrainingActor], name = "trainingActor")
   val helloActor = system.actorOf(Props[myActor], name = "helloactor")
-  val treeActor = system.actorOf(Props[TreeCreator],name = "treeCreator")
-  treeActor ! "create"
+  // default Actor constructor
+  trainingActor ! "start"
   //helloActor ! "hello"
   //helloActor ! "buenos dias"
 }
