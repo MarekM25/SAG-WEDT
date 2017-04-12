@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/adblock.iml" filepath="$PROJECT_DIR$/.idea/modules/adblock.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/adblock-build.iml" filepath="$PROJECT_DIR$/.idea/modules/adblock-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sag-wedt.iml" filepath="$PROJECT_DIR$/.idea/modules/sag-wedt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sag-wedt-build.iml" filepath="$PROJECT_DIR$/.idea/modules/sag-wedt-build.iml" />
     </modules>
   </component>
 </project>
