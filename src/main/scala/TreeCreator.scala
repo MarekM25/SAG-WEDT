@@ -18,7 +18,7 @@ import scala.io.Source
   */
 class TreeCreator extends Actor {
 
-  def loadData(location:String) = {
+  def loadData(location: String) = {
     //val src = Source.fromFile("D:\\Documents\\magisterka\\SAGWEDT\\data\\computers.csv")
     //val iter = src.getLines().map(_.split(","))
     //iter.foreach(x => println(x.foreach(print)))
@@ -35,7 +35,7 @@ class TreeCreator extends Actor {
     // var reader:BufferedReader = new BufferedReader(new FileReader("/some/where/data.arff"));
   }
 
-  def createTree(loccation:String) : RandomTree =  {
+  def createTree(loccation: String): RandomTree = {
     var data = loadData(loccation)
     var tree: RandomTree = new RandomTree()
     data.setClassIndex(data.numAttributes() - 1)
@@ -48,10 +48,10 @@ class TreeCreator extends Actor {
     eval.crossValidateModel(tree, data, 10, new Random(1))
     //println(tree)
     println(eval.toSummaryString())
-    tree  //W taki sposób zwraca się z funkcji
+    tree //W taki sposób zwraca się z funkcji
   }
 
   def receive = {
-    case location:String => sender() ! createTree(location)//Odsyłamy senderowi
+    case location: String => sender() ! createTree(location) //Odsyłamy senderowi
   }
 }

@@ -13,7 +13,7 @@ import scala.collection.mutable.ListBuffer
   * Created by Kamil on 28.03.2017.
   */
 
-class myActor extends Actor{
+class myActor extends Actor {
   def getHeadlinesFromUrl(url: String): List[String] = {
     var stories = new ListBuffer[String]
     val cleaner = new HtmlCleaner
@@ -22,39 +22,42 @@ class myActor extends Actor{
     val elements = rootNode.getElementsByName("div", true)
     for (elem <- elements) {
       val classType = elem.getAttributeByName("class")
-      if (classType != null && classType.contains("ads"/*"scta reg searchCenterTopAds"*/)) {
+      if (classType != null && classType.contains("ads" /*"scta reg searchCenterTopAds"*/)) {
         // stories might be "dirty" with text like "'", clean it up
         //val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
-        stories += elem.getText.toString//text
+        stories += elem.getText.toString //text
       }
     }
-    return stories.toList//.filter(storyContainsDesiredPhrase(_)).toList
+    return stories.toList //.filter(storyContainsDesiredPhrase(_)).toList
   }
+
   //var stories = new ListBuffer[String]
   def receive = {
     case "hello" => println("hello back at you")
-    case _       => println("huh?")
+    case _ => println("huh?")
       var stories = getHeadlinesFromUrl("file:D:\\Documents\\magisterka\\AdBlock\\data\\shoes - Yahoo Search Results.html")
       stories.foreach(println);
   }
 }
 
-class TrainingActor extends Actor{
+class TrainingActor extends Actor {
   def buildNewTree = {
     val treeActor = context.actorOf(Props[TreeCreator], name = "treeActor")
     treeActor ! "D:\\Documents\\magisterka\\SAGWEDT\\data\\computers.csv"
-  //context.actorSelection("../treeActor") ! "D:\\Documents\\magisterka\\SAGWEDT\\data\\computers.csv" Tak się można dostać do aktora brata
+    //context.actorSelection("../treeActor") ! "D:\\Documents\\magisterka\\SAGWEDT\\data\\computers.csv" Tak się można dostać do aktora brata
 
     //treeActor ! "create"
   }
-  def receive= {
-    case x:RandomTree => println(x)
+
+  def receive = {
+    case x: RandomTree => println(x)
     case _ => buildNewTree
 
 
   }
 }
-object Main extends App{
+
+object Main extends App {
   val system = ActorSystem("HelloSystem")
 
   val trainingActor = system.actorOf(Props[TrainingActor], name = "trainingActor")
