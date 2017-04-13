@@ -43,10 +43,7 @@ class myActor extends Actor {
 class TrainingActor extends Actor {
   def buildNewTree = {
     val treeActor = context.actorOf(Props[TreeCreator], name = "treeActor")
-    treeActor ! "D:\\Documents\\magisterka\\SAGWEDT\\data\\computers.csv"
-    //context.actorSelection("../treeActor") ! "D:\\Documents\\magisterka\\SAGWEDT\\data\\computers.csv" Tak się można dostać do aktora brata
-
-    //treeActor ! "create"
+    treeActor ! "Files\\computers.csv"
   }
 
   def receive = {
