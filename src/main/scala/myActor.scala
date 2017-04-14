@@ -1,11 +1,13 @@
 import java.net.URL
 
 import akka.actor.Actor.Receive
+import com.gargoylesoftware.htmlunit.html.HtmlPage
 import weka.classifiers.trees.RandomTree
 //import org.apache.commons.lang3.StringEscapeUtils
 
 import akka.actor.{Actor, ActorSystem, Props}
 import org.htmlcleaner.HtmlCleaner
+import com.gargoylesoftware.htmlunit._
 
 import scala.collection.mutable.ListBuffer
 
@@ -18,7 +20,17 @@ class myActor extends Actor {
     var stories = new ListBuffer[String]
     val cleaner = new HtmlCleaner
     val props = cleaner.getProperties
-    val rootNode = cleaner.clean(new URL(url))
+
+
+    val url1 = new URL(url)
+    java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(java.util.logging.Level.OFF)
+    val webClient = new WebClient()
+    val page : HtmlPage = webClient.getPage(url1)
+    val connection = url1.openConnection()
+    connection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; .NET CLR 1.2.30703)")
+
+
+    val rootNode = cleaner.clean(page.getWebResponse().getContentAsString())//(new URL(url))
     val elements = rootNode.getElementsByName("div", true)
     for (elem <- elements) {
       val classType = elem.getAttributeByName("class")
@@ -35,7 +47,7 @@ class myActor extends Actor {
   def receive = {
     case "hello" => println("hello back at you")
     case _ => println("huh?")
-      var stories = getHeadlinesFromUrl("file:D:\\Documents\\magisterka\\AdBlock\\data\\shoes - Yahoo Search Results.html")
+      var stories = getHeadlinesFromUrl("https://search.yahoo.com/search;?p=shoes")//("file:F:\\uni 17.04\\scala\\SAG-WEDT\\example_sites\\text ads sites\\shoes - Yahoo Search Results.htm")
       stories.foreach(println);
   }
 }
@@ -60,8 +72,8 @@ object Main extends App {
   val trainingActor = system.actorOf(Props[TrainingActor], name = "trainingActor")
   val helloActor = system.actorOf(Props[myActor], name = "helloactor")
   // default Actor constructor
-  trainingActor ! "start"
-  //helloActor ! "hello"
-  //helloActor ! "buenos dias"
+//  trainingActor ! "start"
+  helloActor ! "hello"
+  helloActor ! "buenos dias"
 }
 
