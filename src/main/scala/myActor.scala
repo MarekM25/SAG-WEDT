@@ -119,7 +119,7 @@ class myActor extends Actor {
 class TrainingActor extends Actor {
   def buildNewTree = {
     val treeActor = context.actorOf(Props[TreeCreator], name = "treeActor")
-    treeActor ! "Files\\computers.csv"
+    treeActor ! "Files\\Text.csv"
   }
 
   def receive = {
