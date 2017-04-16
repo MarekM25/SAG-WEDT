@@ -123,15 +123,6 @@ class myActor extends Actor {
   }
 }
 
-  //var stories = new ListBuffer[String]
-  def receive = {
-    case "hello" => println("hello back at you")
-    case _ => println("huh?")
-      var stories = getDivTextsFromUrl("https://search.yahoo.com/search;?p=shoes")//("file:F:\\uni 17.04\\scala\\SAG-WEDT\\example_sites\\text ads sites\\shoes - Yahoo Search Results.htm")
-      stories.foreach(println);
-  }
-}
-
 class TrainingActor extends Actor {
   def buildNewTree = {
     val treeActor = context.actorOf(Props[TreeCreator], name = "treeActor")
