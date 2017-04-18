@@ -5,6 +5,7 @@ import akka.actor.Actor
 import akka.actor.Actor.Receive
 import weka.classifiers.Evaluation
 import weka.classifiers.evaluation.output.prediction.CSV
+import weka.classifiers.misc.InputMappedClassifier
 import weka.classifiers.trees.RandomTree
 import weka.core.Debug.Random
 import weka.core.Instances
@@ -72,9 +73,10 @@ class TreeCreator extends Actor {
     data
   }
 
-  def createTree(loccation: String): RandomTree = {
+  def createTree(loccation: String) = {
     var data = createVector(loccation)
-    var tree: RandomTree = new RandomTree()
+    var tree: InputMappedClassifier = new InputMappedClassifier()
+    tree.setClassifier(new RandomTree())
     //data.setClassIndex(data.numAttributes() - 1)
     //tree.setOptions(options)
     tree.buildClassifier(data)
@@ -82,9 +84,9 @@ class TreeCreator extends Actor {
     //val optionsEvaluation:Array[String] = new Array[String](1)
     //optionsEvaluation(0)="-t"
     //options(1)="0"
-    eval.crossValidateModel(tree, data, 10, new Random(1))
+    //eval.crossValidateModel(tree, data, 10, new Random(1))
     //println(tree)
-    println(eval.toSummaryString())
+    //println(eval.toSummaryString())
     tree //W taki sposób zwraca się z funkcji
   }
 

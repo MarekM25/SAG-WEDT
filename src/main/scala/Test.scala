@@ -1,5 +1,7 @@
 import akka.actor.{ActorSystem, Props}
 
+import scala.concurrent.duration.DurationConversions.Classifier
+
 /**
   * Created by Kamil on 28.03.2017.
   */

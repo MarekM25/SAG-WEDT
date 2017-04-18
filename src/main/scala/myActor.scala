@@ -3,6 +3,7 @@ import java.net.URL
 import akka.actor.Actor.Receive
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import org.htmlcleaner.TagNode
+import weka.classifiers.misc.InputMappedClassifier
 import weka.classifiers.trees.RandomTree
 import weka.core.pmml.jaxbbindings.True
 
@@ -118,13 +119,16 @@ class myActor extends Actor {
 
 class TrainingActor extends Actor {
   def buildNewTree = {
-    val treeActor = context.actorOf(Props[TreeCreator], name = "treeActor")
-    treeActor ! "Files\\Text.csv"
+    val treeCreator = context.actorOf(Props[TreeCreator], name = "treeCreator")
+    treeCreator ! "Files\\Text.csv"
   }
 
   def receive = {
-    case x: RandomTree => println(x)
-    case _ => buildNewTree
+    case x: InputMappedClassifier =>{
+      val predictor = context.actorOf(Props[MyClassifier], name= "Classifier")
+      predictor ! ("Files\\pred.csv",x)}
+    case "start" => buildNewTree
+    case y:Boolean => println(y)
 
 
   }
