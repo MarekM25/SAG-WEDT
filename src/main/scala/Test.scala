@@ -1,4 +1,7 @@
+import java.util
+
 import akka.actor.{ActorSystem, Props}
+import weka.core.{Attribute, DenseInstance, Instances}
 
 import scala.concurrent.duration.DurationConversions.Classifier
 

@@ -133,7 +133,7 @@ class TrainingActor extends Actor {
   def receive = {
     case x: InputMappedClassifier =>{
       val predictor = context.actorOf(Props[MyClassifier], name= "Classifier")
-      predictor ! ("Files\\pred.csv",x)}
+      predictor ! ("Discount Laptops now here low prices free shipping",x)}
     case "start" => buildNewTree
     case y:Boolean => println(y)
 
