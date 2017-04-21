@@ -23,7 +23,7 @@ import scala.collection.mutable.ListBuffer
   * Created by Kamil on 28.03.2017.
   */
 
-class myActor(value: String) extends Actor {
+class myActor extends Actor {
   def getDivTextsFromUrl(url: String): List[(String, Boolean)] = {
     var texts = new ListBuffer[(String, Boolean)]
     val cleaner = new HtmlCleaner
@@ -118,9 +118,10 @@ class myActor(value: String) extends Actor {
 
   //var stories = new ListBuffer[String]
   def receive = {
-    case "hello" => println("hello back at you")
-      var stories = getDivTextsFromUrl("https://search.yahoo.com/search;?p="+value)//("file:F:\\uni 17.04\\scala\\SAG-WEDT\\example_sites\\text ads sites\\shoes - Yahoo Search Results.htm")
+    case x:String=> {
+      var stories = getDivTextsFromUrl(x)
       stories.foreach(println);
+    }
   }
 }
 
@@ -145,16 +146,11 @@ object Main extends App {
   val system = ActorSystem("HelloSystem")
 
   val trainingActor = system.actorOf(Props[TrainingActor], name = "trainingActor")
-  val helloActor = system.actorOf(Props(new myActor("test")))
-  // default Actor constructor
-//  trainingActor ! "start"
-  helloActor ! "hello"
-  helloActor ! "buenos dias"
+
   val filename = "Files\\SearchDict.txt"
   for (line <- scala.io.Source.fromFile(filename).getLines) {
-    println(line)
-    val myActor = system.actorOf(Props(new myActor(line)))
-    myActor != "hello"
+    val helloActor = system.actorOf(Props[myActor])
+    helloActor ! "https://search.yahoo.com/search;?p="+line
   }
 }
 
