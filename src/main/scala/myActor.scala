@@ -1,4 +1,5 @@
 import java.net.URL
+import javax.xml.transform.Source
 
 import akka.actor.Actor.Receive
 import com.gargoylesoftware.htmlunit.html.HtmlPage
@@ -22,7 +23,7 @@ import scala.collection.mutable.ListBuffer
   * Created by Kamil on 28.03.2017.
   */
 
-class myActor extends Actor {
+class myActor(value: String) extends Actor {
   def getDivTextsFromUrl(url: String): List[(String, Boolean)] = {
     var texts = new ListBuffer[(String, Boolean)]
     val cleaner = new HtmlCleaner
@@ -118,8 +119,7 @@ class myActor extends Actor {
   //var stories = new ListBuffer[String]
   def receive = {
     case "hello" => println("hello back at you")
-    case _ => println("huh?")
-      var stories = getDivTextsFromUrl("https://search.yahoo.com/search;?p=shoes")//("file:F:\\uni 17.04\\scala\\SAG-WEDT\\example_sites\\text ads sites\\shoes - Yahoo Search Results.htm")
+      var stories = getDivTextsFromUrl("https://search.yahoo.com/search;?p="+value)//("file:F:\\uni 17.04\\scala\\SAG-WEDT\\example_sites\\text ads sites\\shoes - Yahoo Search Results.htm")
       stories.foreach(println);
   }
 }
@@ -145,10 +145,16 @@ object Main extends App {
   val system = ActorSystem("HelloSystem")
 
   val trainingActor = system.actorOf(Props[TrainingActor], name = "trainingActor")
-  val helloActor = system.actorOf(Props[myActor], name = "helloactor")
+  val helloActor = system.actorOf(Props(new myActor("test")))
   // default Actor constructor
 //  trainingActor ! "start"
   helloActor ! "hello"
   helloActor ! "buenos dias"
+  val filename = "Files\\SearchDict.txt"
+  for (line <- scala.io.Source.fromFile(filename).getLines) {
+    println(line)
+    val myActor = system.actorOf(Props(new myActor(line)))
+    myActor != "hello"
+  }
 }
 
