@@ -1,21 +1,14 @@
 import java.net.URL
-import javax.xml.transform.Source
 
-import akka.actor.Actor.Receive
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import org.apache.commons.lang3.StringEscapeUtils
 import org.htmlcleaner.TagNode
 import weka.classifiers.misc.InputMappedClassifier
-import weka.classifiers.trees.RandomTree
-import weka.core.pmml.jaxbbindings.True
-
-import scala.collection.mutable.ArrayBuffer
 //import org.apache.commons.lang3.StringEscapeUtils
 
 import akka.actor.{Actor, ActorSystem, Props}
-import org.htmlcleaner.HtmlCleaner
 import com.gargoylesoftware.htmlunit._
-import scala.collection.JavaConverters._
+import org.htmlcleaner.HtmlCleaner
 
 import scala.collection.mutable.ListBuffer
 
@@ -24,30 +17,29 @@ import scala.collection.mutable.ListBuffer
   */
 
 class myActor extends Actor {
-  def getDivTextsFromUrl(url: String): List[(String, Boolean)] = {
-    var texts = new ListBuffer[(String, Boolean)]
+
+  // download html, parse it and return tree representation
+  // input: url, output: root node of the tree
+  def htmlToTree(url: String) : TagNode = {
     val cleaner = new HtmlCleaner
     val props = cleaner.getProperties
 
-
-    val url1 = new URL(url)
-    java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(java.util.logging.Level.OFF)
     val webClient = new WebClient()
-    val page : HtmlPage = webClient.getPage(url1)
-    //val connection = url1.openConnection()
-    //connection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.0.3705; .NET CLR 1.1.4322; .NET CLR 1.2.30703)")
+    val page : HtmlPage = webClient.getPage(new URL(url))
+    val rootNode = cleaner.clean(page.getWebResponse().getContentAsString()) // get tree representation of html
+    rootNode
+  }
 
-
-    val rootNode = cleaner.clean(page.getWebResponse().getContentAsString())//(new URL(url))
+  // input: url, output: list of (div text, is ad) pairs
+  def getDivTextsFromUrl(url: String) : List[(String, Boolean)] = {
+    var texts = new ListBuffer[(String, Boolean)]
+    val rootNode = htmlToTree(url)
     var elements = rootNode.getElementsByName("div", true)
-    var elem = rootNode.findElementByName("div", true)
-    var lastParent = rootNode
+    //var lastParent = rootNode
     for (elem <- elements) {
-      //while(elem != null) {
       val classType = elem.getAttributeByName("class")
-
       // quick, well performing, but limited to yahoo
-      val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
+      //val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
       if (classType != null && classType.contains("ads")) {
         val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
         texts += ((text, true))
@@ -113,14 +105,15 @@ class myActor extends Actor {
     //    while(parent.getName != "div")
     //      parent = parent.findElementByName("div", true);
     //    texts += ((parent.getText.toString, false))
-    return texts.toList //.filter(storyContainsDesiredPhrase(_)).toList
+
+    texts.toList
   }
 
   //var stories = new ListBuffer[String]
   def receive = {
     case x:String=> {
-      var stories = getDivTextsFromUrl(x)
-      stories.foreach(println);
+      var divTexts = getDivTextsFromUrl(x)
+      divTexts.foreach(println);
     }
   }
 }
@@ -143,6 +136,11 @@ class TrainingActor extends Actor {
 }
 
 object Main extends App {
+
+  // turn off html unit warnings
+  java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(java.util.logging.Level.OFF)
+  System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
+
   val system = ActorSystem("HelloSystem")
 
   val trainingActor = system.actorOf(Props[TrainingActor], name = "trainingActor")
