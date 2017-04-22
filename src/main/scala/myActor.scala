@@ -2,7 +2,7 @@ import java.net.URL
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import org.apache.commons.lang3.StringEscapeUtils
-import org.htmlcleaner.TagNode
+import org.htmlcleaner.{CleanerProperties, SimpleHtmlSerializer, TagNode}
 import weka.classifiers.misc.InputMappedClassifier
 //import org.apache.commons.lang3.StringEscapeUtils
 
@@ -30,9 +30,19 @@ class myActor extends Actor {
     rootNode
   }
 
+  def removeStyleNodes(rootNode : TagNode) : TagNode = {
+    // get rid of style nodes to get cleaner text
+    val styleNodes = rootNode.getElementsByName("style", true)
+    for (node <- styleNodes) {
+      node.removeFromTree()
+    }
+    rootNode
+  }
+
   // input: url, output: list of (div text, is ad) pairs
   def getDivTextsFromUrl(url: String) : List[(String, Boolean)] = {
     var texts = new ListBuffer[(String, Boolean)]
+    //val rootNode = removeStyleNodes(htmlToTree(url))
     val rootNode = htmlToTree(url)
     var elements = rootNode.getElementsByName("div", true)
     //var lastParent = rootNode
@@ -109,11 +119,44 @@ class myActor extends Actor {
     texts.toList
   }
 
+
+  def removeAds(url: String): String =
+  {
+    //val orgRootNode = htmlToTree(url)
+    //val rootNode = removeStyleNodes(orgRootNode)
+    val rootNode = htmlToTree(url)
+    var elements = rootNode.getElementsByName("div", true)
+    for (elem <- elements) {
+      val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
+      val words1 = text.split("\\s+")
+      words1
+      val words = text.split("\\s+").length
+      words
+      var dec : Boolean = false
+      val r = scala.util.Random
+      if(words >= 10) {
+        dec = false //r.nextBoolean();
+        val classType = elem.getAttributeByName("class")
+        if (classType != null && classType.contains("ads"))
+          dec = true
+        if(dec == true)
+          elem.removeFromTree();
+      }
+    }
+
+    val props = new CleanerProperties();
+    val htmlSerializer = new SimpleHtmlSerializer(props);
+    var str = htmlSerializer.getAsString(rootNode);
+    str
+  }
+
   //var stories = new ListBuffer[String]
   def receive = {
     case x:String=> {
       var divTexts = getDivTextsFromUrl(x)
       divTexts.foreach(println);
+      var cleanHtml = removeAds(x)
+      cleanHtml.foreach(println);
     }
   }
 }
@@ -144,11 +187,14 @@ object Main extends App {
   val system = ActorSystem("HelloSystem")
 
   val trainingActor = system.actorOf(Props[TrainingActor], name = "trainingActor")
+  trainingActor ! "start"
+
 
   val filename = "Files\\SearchDict.txt"
   for (line <- scala.io.Source.fromFile(filename).getLines) {
     val helloActor = system.actorOf(Props[myActor])
     helloActor ! "https://search.yahoo.com/search;?p="+line
+
   }
 }
 
