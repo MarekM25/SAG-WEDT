@@ -119,42 +119,36 @@ class TreeCreator extends Actor {
     data
   }
 
+  def loadDataFromUrl(url: String) = {
+    val parser = new WebParser()
+    val data = parser.getDivTextsFromUrl(url)
+    //val vec = createVector(data)
+    println(data)
+  }
+
   def createTree(location: String) = {
+    //val dataSet = loadDataFromUrl(location)
     var loaddata = loadData(location)
     val data = createVector(loaddata)
     var tree: InputMappedClassifier = new InputMappedClassifier()
     tree.setClassifier(new RandomTree())
-    //data.setClassIndex(data.numAttributes() - 1)
-    //tree.setOptions(options)
     tree.buildClassifier(data)
     var eval: Evaluation = new Evaluation(data)
-    //val optionsEvaluation:Array[String] = new Array[String](1)
-    //optionsEvaluation(0)="-t"
-    //options(1)="0"
-    //eval.crossValidateModel(tree, data, 10, new Random(1))
-    //println(tree)
-    //println(eval.toSummaryString())
-    tree //W taki sposób zwraca się z funkcji
+    tree
   }
+
+
   def createTree(inputArray:Array[(String,Boolean)]) = {
     var data = loadDataFromString(inputArray)
     var tree: InputMappedClassifier = new InputMappedClassifier()
     tree.setClassifier(new RandomTree())
-    //data.setClassIndex(data.numAttributes() - 1)
-    //tree.setOptions(options)
     tree.buildClassifier(data)
     var eval: Evaluation = new Evaluation(data)
-    //val optionsEvaluation:Array[String] = new Array[String](1)
-    //optionsEvaluation(0)="-t"
-    //options(1)="0"
-    //eval.crossValidateModel(tree, data, 10, new Random(1))
-    //println(tree)
-    //println(eval.toSummaryString())
-    tree //W taki sposób zwraca się z funkcji
+    tree
   }
 
   def receive = {
-    case location: String => sender() ! createTree(location) //Odsyłamy senderowi
+    case url: String => sender() ! createTree(url) //Odsyłamy senderowi
     case input: Array[(String,Boolean)] => sender() ! createTree(input)
   }
 }

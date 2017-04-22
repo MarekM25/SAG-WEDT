@@ -3,30 +3,38 @@ import java.net.URL
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import org.apache.commons.lang3.StringEscapeUtils
-import org.htmlcleaner.{HtmlCleaner, TagNode}
+import org.htmlcleaner.{CleanerProperties, HtmlCleaner, SimpleHtmlSerializer, TagNode}
 
 import scala.collection.mutable.ListBuffer
 
 /**
   * Created by Marek on 21.04.2017.
   */
-class WebParser {
+ class WebParser {
 
-  // download html, parse it and return tree representation
-  // input: url, output: root node of the tree
-  def htmlToTree(url: String): TagNode = {
+  def htmlToTree(url: String) : TagNode = {
     val cleaner = new HtmlCleaner
     val props = cleaner.getProperties
 
     val webClient = new WebClient()
-    val page: HtmlPage = webClient.getPage(new URL(url))
+    val page : HtmlPage = webClient.getPage(new URL(url))
     val rootNode = cleaner.clean(page.getWebResponse().getContentAsString()) // get tree representation of html
     rootNode
   }
 
+  def removeStyleNodes(rootNode : TagNode) : TagNode = {
+    // get rid of style nodes to get cleaner text
+    val styleNodes = rootNode.getElementsByName("style", true)
+    for (node <- styleNodes) {
+      node.removeFromTree()
+    }
+    rootNode
+  }
+
   // input: url, output: list of (div text, is ad) pairs
-  def getDivTextsFromUrl(url: String): List[(String, Boolean)] = {
+  def getDivTextsFromUrl(url: String) : List[(String, Boolean)] = {
     var texts = new ListBuffer[(String, Boolean)]
+    //val rootNode = removeStyleNodes(htmlToTree(url))
     val rootNode = htmlToTree(url)
     var elements = rootNode.getElementsByName("div", true)
     //var lastParent = rootNode
@@ -102,4 +110,41 @@ class WebParser {
 
     texts.toList
   }
+
+
+  def removeAds(url: String): String =
+  {
+    //val orgRootNode = htmlToTree(url)
+    //val rootNode = removeStyleNodes(orgRootNode)
+    val rootNode = htmlToTree(url)
+    var elements = rootNode.getElementsByName("div", true)
+    for (elem <- elements) {
+      val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
+      val words1 = text.split("\\s+")
+      val words = text.split("\\s+").length
+      var dec : Boolean = false
+      val r = scala.util.Random
+      if(words >= 10) {
+        dec = false //r.nextBoolean();
+        val classType = elem.getAttributeByName("class")
+        if (classType != null && classType.contains("ads"))
+          dec = true
+        if(dec == true)
+          elem.removeFromTree();
+      }
+    }
+
+    val props = new CleanerProperties();
+    val htmlSerializer = new SimpleHtmlSerializer(props);
+    var str = htmlSerializer.getAsString(rootNode);
+    str
+  }
+
+//  def receive = {
+//    case x:String=> {
+//      var divTexts = getDivTextsFromUrl(x)
+//      divTexts.foreach(println);
+//      var cleanHtml = removeAds(x)
+//      cleanHtml.foreach(println);
+//    }
 }
