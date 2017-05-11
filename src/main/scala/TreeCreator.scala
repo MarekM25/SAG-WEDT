@@ -124,7 +124,6 @@ class TreeCreator extends Actor {
     val parser = new SiteParser()
     val data = parser.getDivTextsFromFile(file)
     //val vec = createVector(data)
-    println(data)
     data
   }
 

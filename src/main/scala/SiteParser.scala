@@ -29,7 +29,7 @@ import scala.collection.mutable.ListBuffer
   def htmlToTreeFromFile(fileName: String) : TagNode = {
     val cleaner = new HtmlCleaner
 
-    val content = scala.io.Source.fromFile("Files//SearchDict.txt").mkString
+    val content = scala.io.Source.fromFile(fileName).mkString
     val rootNode = cleaner.clean(content) // get tree representation of html
     rootNode
   }
