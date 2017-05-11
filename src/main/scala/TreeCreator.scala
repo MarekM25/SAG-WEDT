@@ -74,6 +74,7 @@ class TreeCreator extends Actor {
     newData
   }
 
+
   def loadDataFromString(input: String)= {
 
     var textAttribute:Attribute = new Attribute("text",null.asInstanceOf[util.ArrayList[String]])
@@ -119,16 +120,17 @@ class TreeCreator extends Actor {
     data
   }
 
-  def loadDataFromUrl(url: String) = {
-    val parser = new WebParser()
-    val data = parser.getDivTextsFromUrl(url)
+  def loadDataFromFile(file: String) = {
+    val parser = new SiteParser()
+    val data = parser.getDivTextsFromFile(file)
     //val vec = createVector(data)
     println(data)
+    data
   }
 
   def createTree(location: String) = {
-    //val dataSet = loadDataFromUrl(location)
-    var loaddata = loadData(location)
+    val fileData = loadDataFromFile(location).toArray[(String, Boolean)]
+    val loaddata = loadDataFromString(fileData)
     val data = createVector(loaddata)
     var tree: InputMappedClassifier = new InputMappedClassifier()
     tree.setClassifier(new RandomTree())
@@ -149,6 +151,6 @@ class TreeCreator extends Actor {
 
   def receive = {
     case url: String => sender() ! createTree(url) //Odsyłamy senderowi
-    case input: Array[(String,Boolean)] => sender() ! createTree(input)
+    //case input: Array[(String,Boolean)] => sender() ! createTree(input)
   }
 }

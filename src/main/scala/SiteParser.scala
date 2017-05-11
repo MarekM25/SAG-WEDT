@@ -1,7 +1,12 @@
+import java.io.PrintWriter
 import java.net.URL
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlPage
+import com.gargoylesoftware.htmlunit.javascript.host.file.File
+import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringEscapeUtils
 import org.htmlcleaner.{CleanerProperties, HtmlCleaner, SimpleHtmlSerializer, TagNode}
 
@@ -10,17 +15,25 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Marek on 21.04.2017.
   */
- class WebParser {
+ class SiteParser {
 
-  def htmlToTree(url: String) : TagNode = {
+  def htmlToTreeFromUrl(url: String) : TagNode = {
     val cleaner = new HtmlCleaner
-    val props = cleaner.getProperties
 
     val webClient = new WebClient()
     val page : HtmlPage = webClient.getPage(new URL(url))
     val rootNode = cleaner.clean(page.getWebResponse().getContentAsString()) // get tree representation of html
     rootNode
   }
+
+  def htmlToTreeFromFile(fileName: String) : TagNode = {
+    val cleaner = new HtmlCleaner
+
+    val content = scala.io.Source.fromFile("Files//SearchDict.txt").mkString
+    val rootNode = cleaner.clean(content) // get tree representation of html
+    rootNode
+  }
+
 
   def removeStyleNodes(rootNode : TagNode) : TagNode = {
     // get rid of style nodes to get cleaner text
@@ -31,11 +44,26 @@ import scala.collection.mutable.ListBuffer
     rootNode
   }
 
+  def getYahooSites() = {
+      val webClient = new WebClient()
+      val filename = "Files\\SearchDict.txt"
+      for (line <- scala.io.Source.fromFile(filename).getLines) {
+        val page : HtmlPage = webClient.getPage(new URL("https://search.yahoo.com/search;?p="+line))
+        new PrintWriter("Pages\\"+line+".html") { write(page.asXml()); close }
+      }
+  }
+
+  def getDataToFileFromUrl(url: String) = {
+    val webClient = new WebClient()
+    val page : HtmlPage = webClient.getPage(new URL(url))
+    new PrintWriter("filename") { write(page.asXml()); close }
+  }
+
   // input: url, output: list of (div text, is ad) pairs
-  def getDivTextsFromUrl(url: String) : List[(String, Boolean)] = {
+  def getDivTextsFromFile(file: String) : List[(String, Boolean)] = {
     var texts = new ListBuffer[(String, Boolean)]
     //val rootNode = removeStyleNodes(htmlToTree(url))
-    val rootNode = htmlToTree(url)
+    val rootNode = htmlToTreeFromFile(file)
     var elements = rootNode.getElementsByName("div", true)
     //var lastParent = rootNode
     for (elem <- elements) {
@@ -114,9 +142,7 @@ import scala.collection.mutable.ListBuffer
 
   def removeAds(url: String): String =
   {
-    //val orgRootNode = htmlToTree(url)
-    //val rootNode = removeStyleNodes(orgRootNode)
-    val rootNode = htmlToTree(url)
+    val rootNode = htmlToTreeFromFile(url)
     var elements = rootNode.getElementsByName("div", true)
     for (elem <- elements) {
       val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)

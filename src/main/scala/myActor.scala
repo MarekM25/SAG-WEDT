@@ -42,15 +42,15 @@ object Main extends App {
   val system = ActorSystem("HelloSystem")
 
   val treeCreator = system.actorOf(Props[TreeCreator], name = "trainingActor")
-  //treeCreator  ! "https://search.yahoo.com/search;?p=shoes"
-  treeCreator  ! "Files\\Text.csv"
+ // treeCreator  ! "https://search.yahoo.com/search;?p=shoes"
+  treeCreator  ! "Pages\\computer.html"
 //  val treeActor = system.actorOf(Props[TreeCreator], name = "treeActor")
 //  treeActor ! "start"
-
- // val filename = "Files\\SearchDict.txt"
-//  for (line <- scala.io.Source.fromFile(filename).getLines) {
-//    val helloActor = system.actorOf(Props[myActor])
-//    helloActor ! "https://search.yahoo.com/search;?p="+line
+  val parser = new SiteParser()
+  parser.getYahooSites();
+  ///val filename = "Files\\computer.html"
+  //for (line <- scala.io.Source.fromFile(filename).getLines) {
+    //val helloActor = system.actorOf(Props[TreeCreator])
 
   //}
 }
