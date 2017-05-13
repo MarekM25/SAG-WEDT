@@ -1,16 +1,7 @@
-import java.net.URL
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage
-import org.apache.commons.lang3.StringEscapeUtils
-import org.htmlcleaner.{CleanerProperties, SimpleHtmlSerializer, TagNode}
 import weka.classifiers.misc.InputMappedClassifier
 //import org.apache.commons.lang3.StringEscapeUtils
 
 import akka.actor.{Actor, ActorSystem, Props}
-import com.gargoylesoftware.htmlunit._
-import org.htmlcleaner.HtmlCleaner
-
-import scala.collection.mutable.ListBuffer
 
 /**
   * Created by Kamil on 28.03.2017.
@@ -54,8 +45,11 @@ object Main extends App {
   //treeCreator  ! "Pages\\computer.html"
   //  val treeActor = system.actorOf(Props[TreeCreator], name = "treeActor")
   //  treeActor ! "start"
-  val parser = new SiteParser()
-  parser.getYahooSites();
+  //val parser = new SiteParser()
+  //parser.getYahooSites();
+
+  val classifier = system.actorOf(Props[MyClassifier], name = "trainingActor")
+  classifier ! "https://search.yahoo.com/search;?p=shoes"
   ///val filename = "Files\\computer.html"
   //for (line <- scala.io.Source.fromFile(filename).getLines) {
   //val helloActor = system.actorOf(Props[TreeCreator])

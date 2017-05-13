@@ -4,10 +4,9 @@ import java.net.URL
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import org.apache.commons.lang3.StringEscapeUtils
-import org.htmlcleaner.{CleanerProperties, HtmlCleaner, SimpleHtmlSerializer, TagNode}
+import org.htmlcleaner.{HtmlCleaner, TagNode}
 
 import scala.collection.mutable.ListBuffer
-
 /**
   * Created by Marek on 21.04.2017.
   */
@@ -45,7 +44,7 @@ class SiteParser {
     val filename = "Files\\SearchDict.txt"
     for (line <- scala.io.Source.fromFile(filename).getLines) {
       val page : HtmlPage = webClient.getPage(new URL("https://search.yahoo.com/search;?p="+line))
-      new PrintWriter("Pages\\"+line+".html") { write(page.asXml()); close }
+      new PrintWriter("Pages\\"+line+".html") { write(page.getWebResponse().getContentAsString()); close }
     }
   }
 
@@ -135,10 +134,8 @@ class SiteParser {
     texts.toList
   }
 
-
-  def removeAds(url: String): String =
-  {
-    val rootNode = htmlToTreeFromFile(url)
+  def getElementsToClassify (rootNode : TagNode) = {
+    val list = new ListBuffer[(String, TagNode)]
     var elements = rootNode.getElementsByName("li", true)
     for (elem <- elements) {
       val subelems = elem.getElementsByName("div", true)
@@ -157,33 +154,28 @@ class SiteParser {
       }
       if (hasText && hasTitle) {
         val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
-        val words1 = text.split("\\s+")
-        val words = text.split("\\s+").length
-        var dec: Boolean = false
-        val r = scala.util.Random
-        if (words >= 10) {
-          dec = false //r.nextBoolean();
-          // call classifier, old verion won't work
-//          val classType = elem.getAttributeByName("class")
-//          if (classType != null && classType.contains("ads"))
-//            dec = true
-          if (dec == true)
-            elem.removeFromTree();
+        val words = text.split("\\s+")
+        val wordsnum = text.split("\\s+").length
+        if (wordsnum >= 10) {
+          list += ((text, elem))
+
+          //if (mc.predict(text, x))
+          //elem.removeFromTree();
         }
       }
     }
-
-    val props = new CleanerProperties();
-    val htmlSerializer = new SimpleHtmlSerializer(props);
-    var str = htmlSerializer.getAsString(rootNode);
-    str
+    list
   }
 
-  //  def receive = {
-  //    case x:String=> {
-  //      var divTexts = getDivTextsFromUrl(x)
-  //      divTexts.foreach(println);
-  //      var cleanHtml = removeAds(x)
-  //      cleanHtml.foreach(println);
-  //    }
+
+
+
+//    def receive = {
+//      case x:String=> {
+//        //var divTexts = getDivTextsFromUrl(x)
+//        //divTexts.foreach(println);
+//        var cleanHtml = removeAds(x)
+//        //cleanHtml.foreach(println);
+//      }
+//    }
 }

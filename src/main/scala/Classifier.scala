@@ -1,5 +1,7 @@
+import java.io.PrintWriter
+
+import org.htmlcleaner.{CleanerProperties, SimpleHtmlSerializer}
 import weka.classifiers.misc.InputMappedClassifier
-import weka.classifiers.trees.RandomTree
 import weka.core.Instances
 import weka.core.stemmers.LovinsStemmer
 import weka.core.stopwords.WordsFromFile
@@ -86,8 +88,31 @@ class MyClassifier extends TreeCreator {
       true
   }
 
+
+  def removeAds(url: String) = //: String =
+  {
+    Model.loadModel
+    var x = Model.getOneRandomClassifier
+    println(x)
+    val parser = new SiteParser()
+
+    val rootNode = parser.htmlToTreeFromUrl(url) //parser.htmlToTreeFromFile(url)
+    val elements = parser.getElementsToClassify(rootNode)
+    for (elem <- elements) {
+      if (predict(elem._1, x) == true)
+        elem._2.removeFromTree();
+    }
+    val props = new CleanerProperties();
+    val htmlSerializer = new SimpleHtmlSerializer(props);
+    var str = htmlSerializer.getAsString(rootNode);
+    new PrintWriter("Pages\\somename_clean.html") { write(str); close }
+    //str
+  }
+
+
   override def receive = {
-    case (data: String, tree: InputMappedClassifier) => sender() ! predict(data, tree) //Odsyłamy senderowi
+    case (data: String) => removeAds(data)
+    //case (data: String, tree: InputMappedClassifier) => sender() ! predict(data, tree) //Odsyłamy senderowi
     //case (data: (String,Boolean), tree: InputMappedClassifier) => sender() ! predict(data, tree)
   }
 }
