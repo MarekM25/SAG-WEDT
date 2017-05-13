@@ -82,8 +82,8 @@ class TreeCreator extends Actor {
     attributes.add(textAttribute)
     var data :Instances = new Instances("data",attributes,0)
     var instanceValue1: Array[Double] = new Array[Double](1)
-      instanceValue1(0) = data.attribute(0).addStringValue(input)
-      data.add(new DenseInstance(1.0, instanceValue1));
+    instanceValue1(0) = data.attribute(0).addStringValue(input)
+    data.add(new DenseInstance(1.0, instanceValue1));
     //inputArray.foreach(in =>addTodata(in));
     //data.setClassIndex(1)
     data
@@ -129,12 +129,14 @@ class TreeCreator extends Actor {
 
   def createTree(location: String) = {
     val fileData = loadDataFromFile(location).toArray[(String, Boolean)]
+    //fileData.foreach(x => println(x._1,x._2))
     val loaddata = loadDataFromString(fileData)
     val data = createVector(loaddata)
     var tree: InputMappedClassifier = new InputMappedClassifier()
     tree.setClassifier(new RandomTree())
+    //println(data)
     tree.buildClassifier(data)
-    var eval: Evaluation = new Evaluation(data)
+    //var eval: Evaluation = new Evaluation(data)
     tree
   }
 

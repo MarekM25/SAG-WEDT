@@ -1,21 +1,16 @@
 import java.io.PrintWriter
 import java.net.URL
-import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
 
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlPage
-import com.gargoylesoftware.htmlunit.javascript.host.file.File
-import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.StringEscapeUtils
-import org.htmlcleaner.{CleanerProperties, HtmlCleaner, SimpleHtmlSerializer, TagNode}
+import org.htmlcleaner.{HtmlCleaner, TagNode}
 
 import scala.collection.mutable.ListBuffer
-
 /**
   * Created by Marek on 21.04.2017.
   */
- class SiteParser {
+class SiteParser {
 
   def htmlToTreeFromUrl(url: String) : TagNode = {
     val cleaner = new HtmlCleaner
@@ -45,12 +40,12 @@ import scala.collection.mutable.ListBuffer
   }
 
   def getYahooSites() = {
-      val webClient = new WebClient()
-      val filename = "Files\\SearchDict.txt"
-      for (line <- scala.io.Source.fromFile(filename).getLines) {
-        val page : HtmlPage = webClient.getPage(new URL("https://search.yahoo.com/search;?p="+line))
-        new PrintWriter("Pages\\"+line+".html") { write(page.getWebResponse().getContentAsString()); close }
-      }
+    val webClient = new WebClient()
+    val filename = "Files\\SearchDict.txt"
+    for (line <- scala.io.Source.fromFile(filename).getLines) {
+      val page : HtmlPage = webClient.getPage(new URL("https://search.yahoo.com/search;?p="+line))
+      new PrintWriter("Pages\\"+line+".html") { write(page.getWebResponse().getContentAsString()); close }
+    }
   }
 
   def getDataToFileFromUrl(url: String) = {
@@ -139,38 +134,48 @@ import scala.collection.mutable.ListBuffer
     texts.toList
   }
 
-
-  def removeAds(url: String): String =
-  {
-    val rootNode = htmlToTreeFromFile(url)
-    var elements = rootNode.getElementsByName("div", true)
+  def getElementsToClassify (rootNode : TagNode) = {
+    val list = new ListBuffer[(String, TagNode)]
+    var elements = rootNode.getElementsByName("li", true)
     for (elem <- elements) {
-      val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
-      val words1 = text.split("\\s+")
-      val words = text.split("\\s+").length
-      var dec : Boolean = false
-      val r = scala.util.Random
-      if(words >= 10) {
-        dec = false //r.nextBoolean();
-        val classType = elem.getAttributeByName("class")
-        if (classType != null && classType.contains("ads"))
-          dec = true
-        if(dec == true)
-          elem.removeFromTree();
+      val subelems = elem.getElementsByName("div", true)
+      var hasTitle = false
+      var hasText = false
+      for (selem <- subelems) {
+        val classType = selem.getAttributeByName("class")
+        if (classType != null) {
+          if (classType.contains("Title")) {
+            hasTitle = true
+          }
+          else if (classType.contains("Text")) {
+            hasText = true
+          }
+        }
+      }
+      if (hasText && hasTitle) {
+        val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
+        val words = text.split("\\s+")
+        val wordsnum = text.split("\\s+").length
+        if (wordsnum >= 10) {
+          list += ((text, elem))
+
+          //if (mc.predict(text, x))
+          //elem.removeFromTree();
+        }
       }
     }
-
-    val props = new CleanerProperties();
-    val htmlSerializer = new SimpleHtmlSerializer(props);
-    var str = htmlSerializer.getAsString(rootNode);
-    str
+    list
   }
 
-//  def receive = {
-//    case x:String=> {
-//      var divTexts = getDivTextsFromUrl(x)
-//      divTexts.foreach(println);
-//      var cleanHtml = removeAds(x)
-//      cleanHtml.foreach(println);
+
+
+
+//    def receive = {
+//      case x:String=> {
+//        //var divTexts = getDivTextsFromUrl(x)
+//        //divTexts.foreach(println);
+//        var cleanHtml = removeAds(x)
+//        //cleanHtml.foreach(println);
+//      }
 //    }
 }
