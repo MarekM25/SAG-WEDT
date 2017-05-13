@@ -49,7 +49,7 @@ import scala.collection.mutable.ListBuffer
       val filename = "Files\\SearchDict.txt"
       for (line <- scala.io.Source.fromFile(filename).getLines) {
         val page : HtmlPage = webClient.getPage(new URL("https://search.yahoo.com/search;?p="+line))
-        new PrintWriter("Pages\\"+line+".html") { write(page.asXml()); close }
+        new PrintWriter("Pages\\"+line+".html") { write(page.getWebResponse().getContentAsString()); close }
       }
   }
 
