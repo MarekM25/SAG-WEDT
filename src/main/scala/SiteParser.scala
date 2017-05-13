@@ -15,7 +15,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * Created by Marek on 21.04.2017.
   */
- class SiteParser {
+class SiteParser {
 
   def htmlToTreeFromUrl(url: String) : TagNode = {
     val cleaner = new HtmlCleaner
@@ -45,12 +45,12 @@ import scala.collection.mutable.ListBuffer
   }
 
   def getYahooSites() = {
-      val webClient = new WebClient()
-      val filename = "Files\\SearchDict.txt"
-      for (line <- scala.io.Source.fromFile(filename).getLines) {
-        val page : HtmlPage = webClient.getPage(new URL("https://search.yahoo.com/search;?p="+line))
-        new PrintWriter("Pages\\"+line+".html") { write(page.asXml()); close }
-      }
+    val webClient = new WebClient()
+    val filename = "Files\\SearchDict.txt"
+    for (line <- scala.io.Source.fromFile(filename).getLines) {
+      val page : HtmlPage = webClient.getPage(new URL("https://search.yahoo.com/search;?p="+line))
+      new PrintWriter("Pages\\"+line+".html") { write(page.asXml()); close }
+    }
   }
 
   def getDataToFileFromUrl(url: String) = {
@@ -166,11 +166,11 @@ import scala.collection.mutable.ListBuffer
     str
   }
 
-//  def receive = {
-//    case x:String=> {
-//      var divTexts = getDivTextsFromUrl(x)
-//      divTexts.foreach(println);
-//      var cleanHtml = removeAds(x)
-//      cleanHtml.foreach(println);
-//    }
+  //  def receive = {
+  //    case x:String=> {
+  //      var divTexts = getDivTextsFromUrl(x)
+  //      divTexts.foreach(println);
+  //      var cleanHtml = removeAds(x)
+  //      cleanHtml.foreach(println);
+  //    }
 }
