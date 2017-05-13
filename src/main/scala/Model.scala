@@ -1,5 +1,7 @@
 import weka.classifiers.misc.InputMappedClassifier
 
+import scala.collection.mutable.ArrayBuffer
+
 /**
   * Created by Kamil on 13.05.2017.
   */
@@ -27,5 +29,16 @@ object Model {
 
   def getOneRandomClassifier : InputMappedClassifier ={
     models(r.nextInt(models.size))
+  }
+
+  def getNRandomClassifiers (n : Int) : ArrayBuffer[InputMappedClassifier] ={
+    var array = new ArrayBuffer[InputMappedClassifier]
+    for (i <- 1 to n)
+      array += models(r.nextInt(models.size))
+    array
+  }
+
+  def getNRandomClassifierNoRep (n : Int) : ArrayBuffer[InputMappedClassifier] ={
+    scala.util.Random.shuffle(models).take(n)
   }
 }

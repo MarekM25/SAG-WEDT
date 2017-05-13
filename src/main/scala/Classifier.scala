@@ -92,14 +92,22 @@ class MyClassifier extends TreeCreator {
   def removeAds(url: String) = //: String =
   {
     Model.loadModel
-    var x = Model.getOneRandomClassifier
-    println(x)
+    val trees = Model.getNRandomClassifiers(10)
+    //println(x)
     val parser = new SiteParser()
 
     val rootNode = parser.htmlToTreeFromUrl(url) //parser.htmlToTreeFromFile(url)
     val elements = parser.getElementsToClassify(rootNode)
     for (elem <- elements) {
-      if (predict(elem._1, x) == true)
+      var votesFor = 0
+      var votesAgainst = 0
+      for (t <- trees) {
+        if (predict(elem._1, t) == true)
+          votesFor += 1
+        else
+          votesAgainst += 1
+      }
+      if(votesFor > votesAgainst)
         elem._2.removeFromTree();
     }
     val props = new CleanerProperties();
