@@ -138,6 +138,7 @@ class TreeCreator extends Actor {
     //println(data)
     tree.buildClassifier(data)
     //var eval: Evaluation = new Evaluation(data)
+    //println(tree)
     tree
   }
 

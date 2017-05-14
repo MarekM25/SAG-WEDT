@@ -92,7 +92,7 @@ class MyClassifier extends TreeCreator {
   def removeAds(url: String) = //: String =
   {
     Model.loadModel
-    val trees = Model.getNRandomClassifiers(10)
+    val trees = Model.getNRandomClassifiers(500)
     //println(x)
     val parser = new SiteParser()
 
@@ -113,7 +113,7 @@ class MyClassifier extends TreeCreator {
     val props = new CleanerProperties();
     val htmlSerializer = new SimpleHtmlSerializer(props);
     var str = htmlSerializer.getAsString(rootNode);
-    new PrintWriter("Pages\\somename_clean.html") { write(str); close }
+    new PrintWriter("ClearPages\\somename_clean.html") { write(str); close }
     //str
   }
 

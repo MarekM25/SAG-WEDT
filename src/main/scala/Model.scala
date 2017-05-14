@@ -1,4 +1,5 @@
 import weka.classifiers.misc.InputMappedClassifier
+import weka.core.Debug.Log
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -11,6 +12,13 @@ object Model {
 
   def addToMap(m:InputMappedClassifier) ={
     models.append(m)
+    println(models.size)
+  }
+
+  def addAndSave(m:InputMappedClassifier) ={
+    models.append(m)
+    weka.core.SerializationHelper.write("Files\\Models\\classifier" + (models.size-1) + ".model", models(models.size-1))
+    println(models.size)
   }
 
   def printModels(): Unit ={
@@ -18,8 +26,11 @@ object Model {
     models.foreach(m => println(m))
   }
  def saveModel ={
-   for(i <- 0 to models.size-1)
-      weka.core.SerializationHelper.write("Files\\Models\\classifier"+i+".model",models(i))
+   //println("Start saving")
+   for(i <- 0 to models.size-1) {
+     weka.core.SerializationHelper.write("Files\\Models\\classifier" + i + ".model", models(i))
+   }
+   //println("Save completed")
  }
   def loadModel = {
     val modelsize = 2
