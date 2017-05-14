@@ -1,4 +1,4 @@
-import java.io.PrintWriter
+import java.io.{File, PrintWriter}
 import java.net.URL
 
 import com.gargoylesoftware.htmlunit.WebClient
@@ -48,11 +48,29 @@ class SiteParser {
     }
   }
 
+  def removeSitesWithNoAds() = {
+    val filename = "Files\\SearchDict.txt"
+    for (line <- scala.io.Source.fromFile(filename).getLines) {
+      if (!this.checkIfHasAds("Pages\\" +line +".html"))
+        new File("Pages\\"+line+".html").delete()
+      else
+        print(line+"\n")
+    }
+  }
+
   def getDataToFileFromUrl(url: String) = {
     val webClient = new WebClient()
     val page : HtmlPage = webClient.getPage(new URL(url))
     new PrintWriter("filename") { write(page.asXml()); close }
   }
+  def c1(x: (String, Boolean)) = x._2
+
+  def checkIfHasAds(filename : String) : Boolean = {
+    val parser = new SiteParser()
+    val listOfTexts = parser.getDivTextsFromFile(filename)
+    listOfTexts.exists(x=>c1(x))
+  }
+
 
   // input: url, output: list of (div text, is ad) pairs
   def getDivTextsFromFile(file: String) : List[(String, Boolean)] = {

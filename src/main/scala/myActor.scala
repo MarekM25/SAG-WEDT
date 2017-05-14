@@ -1,3 +1,5 @@
+import java.io.File
+
 import weka.classifiers.misc.InputMappedClassifier
 //import org.apache.commons.lang3.StringEscapeUtils
 
@@ -32,14 +34,15 @@ class TrainingActor extends Actor {
   }
 }
 
-object Main extends App {
 
+object Main extends App {
   // turn off html unit warnings
   java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(java.util.logging.Level.OFF)
   System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
   Model.loadModel//loads model from files stored at /Files/Models/...
   val system = ActorSystem("HelloSystem")
-
+  val parser = new SiteParser()
+  parser.removeSitesWithNoAds()
   //val treeCreator = system.actorOf(Props[TreeCreator], name = "trainingActor")
   // treeCreator  ! "https://search.yahoo.com/search;?p=shoes"
   //treeCreator  ! "Pages\\computer.html"
@@ -48,8 +51,8 @@ object Main extends App {
   //val parser = new SiteParser()
   //parser.getYahooSites();
 
-  val classifier = system.actorOf(Props[MyClassifier], name = "trainingActor")
-  classifier ! "https://search.yahoo.com/search;?p=shoes"
+  //val classifier = system.actorOf(Props[MyClassifier], name = "trainingActor")
+  //classifier ! "https://search.yahoo.com/search;?p=shoes"
   ///val filename = "Files\\computer.html"
   //for (line <- scala.io.Source.fromFile(filename).getLines) {
   //val helloActor = system.actorOf(Props[TreeCreator])

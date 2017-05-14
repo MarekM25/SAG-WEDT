@@ -120,6 +120,7 @@ class TreeCreator extends Actor {
     data
   }
 
+
   def loadDataFromFile(file: String) = {
     val parser = new SiteParser()
     val data = parser.getDivTextsFromFile(file)
@@ -151,7 +152,7 @@ class TreeCreator extends Actor {
   }
 
   def receive = {
-    case url: String => sender() ! createTree(url) //Odsyłamy senderowi
+    case location: String => sender() ! createTree(location) //Odsyłamy senderowi
     //case input: Array[(String,Boolean)] => sender() ! createTree(input)
   }
 }
