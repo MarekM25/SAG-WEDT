@@ -5,6 +5,7 @@ import java.util
 import akka.actor.Actor
 import akka.actor.Actor.Receive
 import weka.classifiers.Evaluation
+import weka.classifiers.bayes.NaiveBayes
 import weka.classifiers.evaluation.output.prediction.CSV
 import weka.classifiers.misc.InputMappedClassifier
 import weka.classifiers.trees.RandomTree
@@ -43,9 +44,9 @@ class TreeCreator extends Actor {
     stwv.setOptions(Array("-R", "first"))
     stwv.setLowerCaseTokens(true)
     stwv.setMinTermFreq(1);
-    val stemmer:LovinsStemmer = new LovinsStemmer()
-    val stopWords:WordsFromFile= new WordsFromFile()
-    stopWords.setOptions(Array("-stopwords","Files\\stopwords.txt"))
+    val stemmer: LovinsStemmer = new LovinsStemmer()
+    val stopWords: WordsFromFile = new WordsFromFile()
+    stopWords.setOptions(Array("-stopwords", "Files\\stopwords.txt"))
     stwv.setStopwordsHandler(stopWords)
     stwv.setStemmer(stemmer)
     stwv.setTFTransform(false)
@@ -75,12 +76,12 @@ class TreeCreator extends Actor {
   }
 
 
-  def loadDataFromString(input: String)= {
+  def loadDataFromString(input: String) = {
 
-    var textAttribute:Attribute = new Attribute("text",null.asInstanceOf[util.ArrayList[String]])
+    var textAttribute: Attribute = new Attribute("text", null.asInstanceOf[util.ArrayList[String]])
     val attributes = new util.ArrayList[Attribute]
     attributes.add(textAttribute)
-    var data :Instances = new Instances("data",attributes,0)
+    var data: Instances = new Instances("data", attributes, 0)
     var instanceValue1: Array[Double] = new Array[Double](1)
     instanceValue1(0) = data.attribute(0).addStringValue(input)
     data.add(new DenseInstance(1.0, instanceValue1));
@@ -89,18 +90,19 @@ class TreeCreator extends Actor {
     data
   }
 
-  def loadDataFromString(inputArray:Array[(String,Boolean)])= {
+  def loadDataFromString(inputArray: Array[(String, Boolean)]) = {
 
     var classVal = new util.ArrayList[String]()
     classVal.add("1")
     classVal.add("0")
-    var textAttribute:Attribute = new Attribute("text",null.asInstanceOf[util.ArrayList[String]])
-    var classAttribute : Attribute = new Attribute("class",classVal)
+    var textAttribute: Attribute = new Attribute("text", null.asInstanceOf[util.ArrayList[String]])
+    var classAttribute: Attribute = new Attribute("class", classVal)
     val attributes = new util.ArrayList[Attribute]
     attributes.add(textAttribute)
     attributes.add(classAttribute)
-    var data :Instances = new Instances("data",attributes,0)
-    def addTodata(input:(String,Boolean))= {
+    var data: Instances = new Instances("data", attributes, 0)
+
+    def addTodata(input: (String, Boolean)) = {
       var instanceValue1: Array[Double] = new Array[Double](2);
       instanceValue1(0) = data.attribute(0).addStringValue(input._1);
       if (input._2)
@@ -109,7 +111,8 @@ class TreeCreator extends Actor {
         instanceValue1(1) = 1;
       data.add(new DenseInstance(1.0, instanceValue1));
     }
-    inputArray.foreach(in =>addTodata(in));
+
+    inputArray.foreach(in => addTodata(in));
     data.setClassIndex(1)
     data
   }
@@ -134,7 +137,8 @@ class TreeCreator extends Actor {
     val loaddata = loadDataFromString(fileData)
     val data = createVector(loaddata)
     var tree: InputMappedClassifier = new InputMappedClassifier()
-    tree.setClassifier(new RandomTree())
+    tree.setClassifier(new NaiveBayes)
+    tree.setSuppressMappingReport(true)
     //println(data)
     tree.buildClassifier(data)
     //var eval: Evaluation = new Evaluation(data)
@@ -143,7 +147,7 @@ class TreeCreator extends Actor {
   }
 
 
-  def createTree(inputArray:Array[(String,Boolean)]) = {
+  def createTree(inputArray: Array[(String, Boolean)]) = {
     var data = loadDataFromString(inputArray)
     var tree: InputMappedClassifier = new InputMappedClassifier()
     tree.setClassifier(new RandomTree())

@@ -12,28 +12,28 @@ import weka.filters.unsupervised.attribute.{NominalToString, StringToWordVector}
   * Created by Kamil on 16.04.2017.
   */
 class MyClassifier extends TreeCreator {
-//  def predict(location: String, tree: InputMappedClassifier): Boolean = {
-//    val inputData = loadData(location)
-//    val input = createVector(inputData)
-//    //println(input.get(0))
-//    //val mappedClassifier: InputMappedClassifier = new InputMappedClassifier()
-//    //mappedClassifier.setClassifier(tree)
-//    //mappedClassifier.constructMappedInstance(input.get(0))
-//    //weka.core.SerializationHelper.write("Files\\tree.model",tree)
-//    //mappedClassifier.setModelPath("Files\\tree.model")
-//    //mappedClassifier.buildClassifier(input)
-//    //println(mappedClassifier.getOptions.foreach(print))
-//    //println(tree.classifyInstance(input.get(0)))
-//    //println(mappedClassifier)
-//    //println(tree.classifyInstance(input.get(0)))
-//    val addRate = 0.5
-//    val vote = tree.classifyInstance(input.get(0))
-//    println(vote)
-//    if (vote < addRate)
-//      false
-//    else
-//      true
-//  }
+  //  def predict(location: String, tree: InputMappedClassifier): Boolean = {
+  //    val inputData = loadData(location)
+  //    val input = createVector(inputData)
+  //    //println(input.get(0))
+  //    //val mappedClassifier: InputMappedClassifier = new InputMappedClassifier()
+  //    //mappedClassifier.setClassifier(tree)
+  //    //mappedClassifier.constructMappedInstance(input.get(0))
+  //    //weka.core.SerializationHelper.write("Files\\tree.model",tree)
+  //    //mappedClassifier.setModelPath("Files\\tree.model")
+  //    //mappedClassifier.buildClassifier(input)
+  //    //println(mappedClassifier.getOptions.foreach(print))
+  //    //println(tree.classifyInstance(input.get(0)))
+  //    //println(mappedClassifier)
+  //    //println(tree.classifyInstance(input.get(0)))
+  //    val addRate = 0.5
+  //    val vote = tree.classifyInstance(input.get(0))
+  //    println(vote)
+  //    if (vote < addRate)
+  //      false
+  //    else
+  //      true
+  //  }
 
   override def createVector(data: Instances) = {
     /*
@@ -44,9 +44,9 @@ class MyClassifier extends TreeCreator {
     stwv.setOptions(Array("-R", "first"))
     stwv.setLowerCaseTokens(true)
     stwv.setMinTermFreq(1);
-    val stemmer:LovinsStemmer = new LovinsStemmer()
-    val stopWords:WordsFromFile= new WordsFromFile()
-    stopWords.setOptions(Array("-stopwords","Files\\stopwords.txt"))
+    val stemmer: LovinsStemmer = new LovinsStemmer()
+    val stopWords: WordsFromFile = new WordsFromFile()
+    stopWords.setOptions(Array("-stopwords", "Files\\stopwords.txt"))
     stwv.setStopwordsHandler(stopWords)
     stwv.setStemmer(stemmer)
     stwv.setTFTransform(false)
@@ -78,11 +78,12 @@ class MyClassifier extends TreeCreator {
   def predict(data: String, tree: InputMappedClassifier): Boolean = {
     val inputData = loadDataFromString(data)
     val input = createVector(inputData)
-    println("PREDICT DATA" +input)
+    //println("PREDICT DATA" +input)
     val addRate = 0.5
     val vote = tree.classifyInstance(input.get(0))
-    println(vote)
-    if (vote < addRate)
+    tree.setSuppressMappingReport(true)
+    //println(vote)
+    if (vote > addRate)
       false
     else
       true
@@ -91,12 +92,13 @@ class MyClassifier extends TreeCreator {
 
   def removeAds(url: String) = //: String =
   {
-    Model.loadModel
+    //Model.loadModel
     val trees = Model.getNRandomClassifiers(500)
     //println(x)
     val parser = new SiteParser()
 
-    val rootNode = parser.htmlToTreeFromUrl(url) //parser.htmlToTreeFromFile(url)
+    val rootNode = parser.htmlToTreeFromUrl(url)
+    //parser.htmlToTreeFromFile(url)
     val elements = parser.getElementsToClassify(rootNode)
     for (elem <- elements) {
       var votesFor = 0
@@ -107,13 +109,16 @@ class MyClassifier extends TreeCreator {
         else
           votesAgainst += 1
       }
-      if(votesFor > votesAgainst)
+      println(votesFor, votesAgainst)
+      if (votesFor > votesAgainst)
         elem._2.removeFromTree();
     }
     val props = new CleanerProperties();
     val htmlSerializer = new SimpleHtmlSerializer(props);
     var str = htmlSerializer.getAsString(rootNode);
-    new PrintWriter("ClearPages\\somename_clean.html") { write(str); close }
+    new PrintWriter("ClearPages\\somename_clean.html") {
+      write(str); close
+    }
     //str
   }
 

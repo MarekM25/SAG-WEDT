@@ -14,8 +14,8 @@ object Test extends App {
   Model.loadModel
   var x = Model.getOneRandomClassifier
   println(x)
-  val predictor = system.actorOf(Props[MyClassifier], name= "Classifier")
-  predictor ! ("Discount Laptops now here low prices free shipping",x)
+  val predictor = system.actorOf(Props[MyClassifier], name = "Classifier")
+  predictor ! ("Discount Laptops now here low prices free shipping", x)
   //Model.printModels()
   //trainingActor ! "start"
   //val trainingActor = system.actorOf(Props[TrainingActor], name = "trainingActor")
