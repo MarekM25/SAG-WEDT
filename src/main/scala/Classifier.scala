@@ -1,12 +1,14 @@
 import java.io.PrintWriter
 
-import org.htmlcleaner.{CleanerProperties, SimpleHtmlSerializer}
+import org.htmlcleaner.{CleanerProperties, SimpleHtmlSerializer, TagNode}
 import weka.classifiers.misc.InputMappedClassifier
 import weka.core.Instances
 import weka.core.stemmers.LovinsStemmer
 import weka.core.stopwords.WordsFromFile
 import weka.core.tokenizers.NGramTokenizer
 import weka.filters.unsupervised.attribute.{NominalToString, StringToWordVector}
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by Kamil on 16.04.2017.
@@ -80,8 +82,8 @@ class MyClassifier extends TreeCreator {
     val input = createVector(inputData)
     //println("PREDICT DATA" +input)
     val addRate = 0.5
-    val vote = tree.classifyInstance(input.get(0))
     tree.setSuppressMappingReport(true)
+    val vote = tree.classifyInstance(input.get(0))
     //println(vote)
     if (vote > addRate)
       false
@@ -100,18 +102,25 @@ class MyClassifier extends TreeCreator {
     val rootNode = parser.htmlToTreeFromUrl(url)
     //parser.htmlToTreeFromFile(url)
     val elements = parser.getElementsToClassify(rootNode)
+    var results = new ArrayBuffer[(Int, TagNode)]
     for (elem <- elements) {
-      var votesFor = 0
-      var votesAgainst = 0
+      var votesFor : Int = 0
+      var votesAgainst : Int = 0
       for (t <- trees) {
         if (predict(elem._1, t) == true)
           votesFor += 1
         else
           votesAgainst += 1
       }
+      results += ((votesFor, elem._2))
       println(votesFor, votesAgainst)
-      if (votesFor > votesAgainst)
-        elem._2.removeFromTree();
+    }
+    results = results.sortWith(_._1 < _._1)
+    val min = results.head._1
+    val max = results.last._1
+    for (r <- results) {
+      if (r._1 >= 2 * min && r._1 >= 0.7 * max && r._1 >= 100)
+        r._2.removeFromTree();
     }
     val props = new CleanerProperties();
     val htmlSerializer = new SimpleHtmlSerializer(props);
