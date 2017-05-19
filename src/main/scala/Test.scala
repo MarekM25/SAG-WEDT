@@ -1,16 +1,11 @@
-import java.util
-
 import akka.actor.{ActorSystem, Props}
-import weka.core.{Attribute, DenseInstance, Instances}
-
-import scala.concurrent.duration.DurationConversions.Classifier
 
 /**
   * Created by Kamil on 28.03.2017.
   */
 object Test extends App {
   val system = ActorSystem("HelloSystem")
-  val trainingActor = system.actorOf(Props[TrainingActor], name = "trainingActor")
+  val trainingActor = system.actorOf(Props[TrainingDispacher], name = "trainingActor")
   Model.loadModel
   var x = Model.getOneRandomClassifier
   println(x)

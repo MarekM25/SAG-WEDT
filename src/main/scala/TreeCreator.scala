@@ -1,24 +1,16 @@
-import java.io.{BufferedReader, ByteArrayInputStream, FileReader, InputStream}
-import java.nio.charset.StandardCharsets
 import java.util
 
-import akka.actor.Actor
-import akka.actor.Actor.Receive
+import akka.actor.{Actor, ActorRef}
 import weka.classifiers.Evaluation
 import weka.classifiers.bayes.NaiveBayes
-import weka.classifiers.evaluation.output.prediction.CSV
 import weka.classifiers.misc.InputMappedClassifier
 import weka.classifiers.trees.RandomTree
-import weka.core.Debug.Random
-import weka.core.{Attribute, DenseInstance, Instances}
-import weka.core.converters.CSVLoader
 import weka.core.converters.ConverterUtils.DataSource
-import weka.core.stemmers.{LovinsStemmer, SnowballStemmer}
+import weka.core.stemmers.LovinsStemmer
 import weka.core.stopwords.WordsFromFile
 import weka.core.tokenizers.NGramTokenizer
+import weka.core.{Attribute, DenseInstance, Instances}
 import weka.filters.unsupervised.attribute.{NominalToString, StringToWordVector}
-
-import scala.io.Source
 
 
 /**
@@ -157,7 +149,7 @@ class TreeCreator extends Actor {
   }
 
   def receive = {
-    case location: String => sender() ! createTree(location) //Odsyłamy senderowi
+    case (location: String, act : ActorRef) => act ! createTree(location) //Odsyłamy wynik
     //case input: Array[(String,Boolean)] => sender() ! createTree(input)
   }
 }
