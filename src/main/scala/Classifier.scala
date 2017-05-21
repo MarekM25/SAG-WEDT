@@ -1,5 +1,6 @@
 import java.io.PrintWriter
 
+import akka.actor.ActorRef
 import org.htmlcleaner.{CleanerProperties, SimpleHtmlSerializer, TagNode}
 import weka.classifiers.misc.InputMappedClassifier
 import weka.core.Instances
@@ -13,7 +14,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * Created by Kamil on 16.04.2017.
   */
-class MyClassifier extends TreeCreator {
+class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
   //  def predict(location: String, tree: InputMappedClassifier): Boolean = {
   //    val inputData = loadData(location)
   //    val input = createVector(inputData)
@@ -129,6 +130,10 @@ class MyClassifier extends TreeCreator {
     new PrintWriter("ClearPages\\somename_clean.html") {
       write(str); close
     }
+    var dif = results.map{500 - 2*_._1}
+    dif = dif.map(math.abs(_))
+    if(dif.reduceLeft(_ + _)/dif.length <= 50)
+      TrainingDispacher ! url
     //str
   }
 
