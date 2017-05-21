@@ -1,6 +1,6 @@
 import java.util
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.Actor
 import weka.classifiers.Evaluation
 import weka.classifiers.bayes.NaiveBayes
 import weka.classifiers.misc.InputMappedClassifier
@@ -149,7 +149,7 @@ class TreeCreator extends Actor {
   }
 
   def receive = {
-    case (location: String, act : ActorRef) => act ! createTree(location) //Odsyłamy wynik
+    case location: String => sender() ! createTree(location) //Odsyłamy nadawcy
     //case input: Array[(String,Boolean)] => sender() ! createTree(input)
   }
 }

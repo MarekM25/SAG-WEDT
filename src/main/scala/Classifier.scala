@@ -115,11 +115,12 @@ class MyClassifier extends TreeCreator {
       results += ((votesFor, elem._2))
       println(votesFor, votesAgainst)
     }
+    val unique = results.distinct
     results = results.sortWith(_._1 < _._1)
     val min = results.head._1
     val max = results.last._1
     for (r <- results) {
-      if (r._1 >= 2 * min && r._1 >= 0.7 * max && r._1 >= 100)
+      if (r._1 >= 2 * min && r._1 >= 0.7 * max && r._1 >= 200)
         r._2.removeFromTree();
     }
     val props = new CleanerProperties();
