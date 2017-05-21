@@ -152,11 +152,9 @@ class SiteParser {
 //  }
 
 
-  // input: url, output: list of (div text, is ad) pairs
-  def getDivTextsFromFile(file: String) : List[(String, Boolean)] = {
+  // input: file location, output: list of (div text, is ad) pairs
+  def getDivTexts(rootNode: TagNode) : List[(String, Boolean)] = {
     var texts = new ListBuffer[(String, Boolean)]
-    //val rootNode = removeStyleNodes(htmlToTree(url))
-    val rootNode = htmlToTreeFromFile(file)
     val list = getElementsToClassify(rootNode)
     for (elem <- list) {
       var isAdd = false
@@ -173,6 +171,19 @@ class SiteParser {
         texts += ((elem._1, false))
     }
     texts.toList
+  }
+
+  // input: url, output: list of (div text, is ad) pairs
+  def getDivTextsFromUrl(url: String) : List[(String, Boolean)] = {
+    val rootNode = htmlToTreeFromUrl(url)
+   getDivTexts(rootNode)
+  }
+
+
+  // input: file location, output: list of (div text, is ad) pairs
+  def getDivTextsFromFile(file: String) : List[(String, Boolean)] = {
+    val rootNode = htmlToTreeFromFile(file)
+    getDivTexts(rootNode)
   }
 
   def getElementsToClassify (rootNode : TagNode) = {

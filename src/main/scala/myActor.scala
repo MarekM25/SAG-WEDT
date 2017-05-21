@@ -115,21 +115,21 @@ object Main extends App {
   java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(java.util.logging.Level.OFF)
   System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
   val system = ActorSystem("HelloSystem")
-  //createModel();//Funkcja do tworzenia modelu
+  createModel();//Funkcja do tworzenia modelu
   //
-  Model.loadModel
-  //loads model from files stored at /Files/Models/...
-  val classifier = system.actorOf(Props[MyClassifier], name = "trainingActor")
-
-
-  while(true){
-    println("Podaj slowo do wyszukania")
-    val word = scala.io.StdIn.readLine()
-    classifier ! "https://search.yahoo.com/search;?p="+word
-  }
-  ///val filename = "Files\\computer.html"
-  //for (line <- scala.io.Source.fromFile(filename).getLines) {
-  //val helloActor = system.actorOf(Props[TreeCreator])
-
-  //}
+//  Model.loadModel
+//  //loads model from files stored at /Files/Models/...
+//  val classifier = system.actorOf(Props[MyClassifier], name = "trainingActor")
+//
+//
+//  while(true){
+//    println("Podaj slowo do wyszukania")
+//    val word = scala.io.StdIn.readLine()
+//    classifier ! "https://search.yahoo.com/search;?p="+word
+//  }
+//  ///val filename = "Files\\computer.html"
+//  //for (line <- scala.io.Source.fromFile(filename).getLines) {
+//  //val helloActor = system.actorOf(Props[TreeCreator])
+//
+//  //}
 }

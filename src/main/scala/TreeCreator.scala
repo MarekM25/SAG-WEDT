@@ -2,7 +2,6 @@ import java.util
 
 import akka.actor.Actor
 import weka.classifiers.Evaluation
-import weka.classifiers.bayes.NaiveBayes
 import weka.classifiers.misc.InputMappedClassifier
 import weka.classifiers.trees.RandomTree
 import weka.core.converters.ConverterUtils.DataSource
@@ -123,21 +122,36 @@ class TreeCreator extends Actor {
     data
   }
 
-  def createTree(location: String) = {
-    val fileData = loadDataFromFile(location).toArray[(String, Boolean)]
-    //fileData.foreach(x => println(x._1,x._2))
-    val loaddata = loadDataFromString(fileData)
-    val data = createVector(loaddata)
-    var tree: InputMappedClassifier = new InputMappedClassifier()
-    tree.setClassifier(new NaiveBayes)
-    tree.setSuppressMappingReport(true)
-    //println(data)
-    tree.buildClassifier(data)
-    //var eval: Evaluation = new Evaluation(data)
-    //println(tree)
-    tree
+  def loadDataFromUrl(url: String) = {
+    val parser = new SiteParser()
+    val data = parser.getDivTextsFromUrl(url)
+    //val vec = createVector(data)
+    data
   }
 
+//  def createTree(fileData : Array[(String, Boolean)]) = {
+//    //fileData.foreach(x => println(x._1,x._2))
+//    val loaddata = loadDataFromString(fileData)
+//    val data = createVector(loaddata)
+//    var tree: InputMappedClassifier = new InputMappedClassifier()
+//    tree.setClassifier(new NaiveBayes)
+//    tree.setSuppressMappingReport(true)
+//    //println(data)
+//    tree.buildClassifier(data)
+//    //var eval: Evaluation = new Evaluation(data)
+//    //println(tree)
+//    tree
+//  }
+
+  def createTreeFromFile(location: String) = {
+    val fileData = loadDataFromFile(location).toArray[(String, Boolean)]
+    createTree(fileData)
+  }
+
+  def createTreeFromUrl(url: String) = {
+    val fileData = loadDataFromUrl(url).toArray[(String, Boolean)]
+    createTree(fileData)
+  }
 
   def createTree(inputArray: Array[(String, Boolean)]) = {
     var data = loadDataFromString(inputArray)
@@ -149,7 +163,8 @@ class TreeCreator extends Actor {
   }
 
   def receive = {
-    case location: String => sender() ! createTree(location) //Odsyłamy nadawcy
+    case location: String => sender() ! createTreeFromFile(location) //Odsyłamy nadawcy
+    case ("url", url:String) => sender() ! createTreeFromUrl(url) //Odsyłamy nadawcy
     //case input: Array[(String,Boolean)] => sender() ! createTree(input)
   }
 }
