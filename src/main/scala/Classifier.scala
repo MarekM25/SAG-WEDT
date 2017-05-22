@@ -130,9 +130,9 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
     new PrintWriter("ClearPages\\somename_clean.html") {
       write(str); close
     }
-    var dif = results.map{500 - 2*_._1}
+    var dif = results.map{trees.size - 2*_._1}
     dif = dif.map(math.abs(_))
-    if(dif.reduceLeft(_ + _)/dif.length <= 50)
+    if(dif.reduceLeft(_ + _)/dif.length <= trees.size/5)
       TrainingDispacher ! url
     //str
   }
