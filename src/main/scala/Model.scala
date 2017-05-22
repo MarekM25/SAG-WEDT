@@ -1,7 +1,6 @@
 import java.io.{File, PrintWriter}
 
 import weka.classifiers.misc.InputMappedClassifier
-import weka.core.Debug.Log
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
@@ -21,7 +20,7 @@ object Model {
   def addAndSave(m: InputMappedClassifier) = {
     models.append(m)
     val writer = new PrintWriter(new File("Files\\Models\\meta.txt" ))
-    writer.write(models.size)
+    writer.write(String.valueOf(models.size))
     writer.close()
     weka.core.SerializationHelper.write("Files\\Models\\classifier" + (models.size - 1) + ".model", models(models.size - 1))
     println(models.size)

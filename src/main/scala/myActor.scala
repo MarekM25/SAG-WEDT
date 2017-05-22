@@ -1,7 +1,3 @@
-import java.io.{File, PrintWriter}
-import java.net.URL
-
-import com.gargoylesoftware.htmlunit.html.HtmlPage
 import weka.classifiers.misc.InputMappedClassifier
 //import org.apache.commons.lang3.StringEscapeUtils
 
