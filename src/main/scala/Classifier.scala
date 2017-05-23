@@ -114,7 +114,7 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
           votesAgainst += 1
       }
       results += ((votesFor, elem._2))
-      println(votesFor, votesAgainst)
+      //println(votesFor, votesAgainst)
     }
     val unique = results.distinct
     results = results.sortWith(_._1 < _._1)
@@ -137,8 +137,56 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
     //str
   }
 
+  def testClassifier(): Unit ={
+    val nrOfModels = 500;
+    //Model.loadModel
+    val TP = 0;
+    val FP = 1;
+    val FN = 2;
+    val TN = 3;
+    val filename = "Files\\TestDictClear.txt"
+    val parser: SiteParser = new SiteParser
+    val results = Array.ofDim[Int](scala.io.Source.fromFile(filename).getLines.size, 4)
+    var i:Int = 0;
+    for (line <- scala.io.Source.fromFile(filename).getLines) {
+      println(line)
+      //println("getDiv")
+      val examples = parser.getDivTextsFromFile("TestPages\\" + line + ".html")
+      val trees = Model.getNRandomClassifiers(nrOfModels)
+      for (elem <- examples) {
+        var votesFor = 0
+        var votesAgainst = 0
+        for (t <- trees) {
+          if (predict(elem._1, t) == true)
+            votesFor += 1
+          else
+            votesAgainst += 1
+        }
+        //println(votesFor, votesAgainst)
+        val dec =votesFor > votesAgainst
+        if(dec) {
+          if(elem._2)
+          results(i)(TP)+=1
+          else
+            results(i)(FP)+=1
+        }
+        if(elem._2)
+          results(i)(FN)+=1
+        else
+          results(i)(TN)+=1
+      }
+      i +=1
+    }
+    for(x <-results){
+      x.foreach(y=> print(y+" "))
+      println()
+    }
+    results.foreach(x => x.foreach(y => print(y+" ")))
+  }
+
 
   override def receive = {
+    case "test"=> testClassifier()
     case (data: String) => removeAds(data)
     //case (data: String, tree: InputMappedClassifier) => sender() ! predict(data, tree) //Odsyłamy senderowi
     //case (data: (String,Boolean), tree: InputMappedClassifier) => sender() ! predict(data, tree)

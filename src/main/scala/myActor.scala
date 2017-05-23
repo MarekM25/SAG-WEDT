@@ -132,3 +132,11 @@ object Main extends App {
 
   //}
 }
+
+object TestModel extends App {
+  val system = ActorSystem("HelloSystem")
+  val treeActor = system.actorOf(Props(new TrainingDispacher(20)), name = "treeActor")
+  treeActor ! "start"
+  val classifier = system.actorOf(Props (new MyClassifier(treeActor)), name = "trainingActor")
+  classifier ! "test"
+}

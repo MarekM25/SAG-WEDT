@@ -6,7 +6,7 @@ import akka.actor.{ActorSystem, Props}
 object Test extends App {
   val system = ActorSystem("HelloSystem")
   val trainingActor = system.actorOf(Props[TrainingDispacher], name = "trainingActor")
-  Model.loadModel
+  //Model.loadModel
   var x = Model.getOneRandomClassifier
   println(x)
   val predictor = system.actorOf(Props[MyClassifier], name = "Classifier")

@@ -3,6 +3,7 @@ import java.util
 import akka.actor.Actor
 import weka.classifiers.bayes.NaiveBayes
 import weka.classifiers.misc.InputMappedClassifier
+import weka.classifiers.trees.RandomTree
 import weka.core.converters.ConverterUtils.DataSource
 import weka.core.stemmers.LovinsStemmer
 import weka.core.stopwords.WordsFromFile
@@ -133,7 +134,7 @@ class TreeCreator extends Actor {
     val loaddata = loadDataFromString(fileData)
     val data = createVector(loaddata)
     var tree: InputMappedClassifier = new InputMappedClassifier()
-    tree.setClassifier(new NaiveBayes)
+    tree.setClassifier(new RandomTree)
     tree.setSuppressMappingReport(true)
     //println(data)
     tree.buildClassifier(data)
