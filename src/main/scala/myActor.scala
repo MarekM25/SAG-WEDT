@@ -11,7 +11,13 @@ import akka.actor.{Actor, ActorSystem, Props}
   */
 
 object treeCreators {
-  @volatile var tcs = new ArrayBuffer[(ActorRef, Boolean)]
+  @volatile var tcs = new ArrayBuffer[(ActorRef, Boolean, Long)]
+
+  def check = {
+    for (i <- tcs.indices)
+      if(tcs(i)._2 == false && tcs(i)._3 + (5 * 60 * 1000) < System.currentTimeMillis)
+        tcs(i) = (tcs(i)._1, true, 0)
+  }
 }
 
 object listOfPages {
@@ -23,7 +29,7 @@ class TrainingDispacher(nTreeCreators: Int) extends Actor {
 
   val nActors = nTreeCreators
   for (i <- 1 to nActors)
-    treeCreators.tcs += ((context.actorOf(Props[TreeCreator], name = "treeCreator"+i), true))
+    treeCreators.tcs += ((context.actorOf(Props[TreeCreator], name = "treeCreator"+i), true, 0))
   //val treeGatherer = context.actorOf(Props[TrainingGatherer], name = "treeGatherer")
 
   def buildNewTreesOnDict = {
@@ -36,10 +42,11 @@ class TrainingDispacher(nTreeCreators: Int) extends Actor {
 
   def buildNewTree : Boolean = {
     var ret = false
+    treeCreators.check
     val idx = treeCreators.tcs.indexWhere(_._2 == true)
     if (idx != -1) {
       val tc = treeCreators.tcs(idx)
-      treeCreators.tcs(idx) = (tc._1, false)
+      treeCreators.tcs(idx) = (tc._1, false, System.currentTimeMillis)
       var s = new String
       if(listOfPages.lst.nonEmpty) {
         s = listOfPages.lst.remove(0)
@@ -73,7 +80,7 @@ class TrainingDispacher(nTreeCreators: Int) extends Actor {
   def reciveTree(act: ActorRef, tree: InputMappedClassifier) = {
     val idx = treeCreators.tcs.indexWhere(_._1 == act)
     if(idx != -1) {
-      treeCreators.tcs(idx) = (treeCreators.tcs(idx)._1, true)
+      treeCreators.tcs(idx) = (treeCreators.tcs(idx)._1, true, 0)
       if(listOfPages.lst.nonEmpty || listOfPages.urllst.nonEmpty)
         buildNewTree
     }
@@ -114,21 +121,21 @@ object Main extends App {
   System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
   val system = ActorSystem("HelloSystem")
   val treeActor = system.actorOf(Props(new TrainingDispacher(20)), name = "treeActor")
-  //createModel();//Funkcja do tworzenia modelu
-  //
-  Model.loadModel
-  //loads model from files stored at /Files/Models/...
-  val classifier = system.actorOf(Props(new MyClassifier(treeActor)), name = "classifier")
+  createModel();//Funkcja do tworzenia modelu
 
-
-  while(true){
-    println("Podaj slowo do wyszukania")
-    val word = scala.io.StdIn.readLine()
-    classifier ! "https://search.yahoo.com/search;?p="+word
-  }
-  ///val filename = "Files\\computer.html"
-  //for (line <- scala.io.Source.fromFile(filename).getLines) {
-  //val helloActor = system.actorOf(Props[TreeCreator])
-
-  //}
+//  Model.loadModel
+//  //loads model from files stored at /Files/Models/...
+//  val classifier = system.actorOf(Props(new MyClassifier(treeActor)), name = "classifier")
+//
+//
+//  while(true){
+//    println("Podaj slowo do wyszukania")
+//    val word = scala.io.StdIn.readLine()
+//    classifier ! "https://search.yahoo.com/search;?p="+word
+//  }
+//  ///val filename = "Files\\computer.html"
+//  //for (line <- scala.io.Source.fromFile(filename).getLines) {
+//  //val helloActor = system.actorOf(Props[TreeCreator])
+//
+//  //}
 }
