@@ -45,6 +45,7 @@ object Model {
   def loadModel = {
     val modelsize = Source.fromFile("Files\\Models\\meta.txt").getLines().next().toInt
     println("Loading model")
+
     for (i <- 0 to modelsize - 1) {
       println(i)
       models.append((weka.core.SerializationHelper.read("Files\\Models\\classifier" + i + ".model")).asInstanceOf[InputMappedClassifier])

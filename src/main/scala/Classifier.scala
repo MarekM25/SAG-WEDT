@@ -1,4 +1,4 @@
-import java.io.PrintWriter
+import java.io.{File, FileOutputStream, PrintWriter}
 
 import akka.actor.ActorRef
 import org.htmlcleaner.{CleanerProperties, SimpleHtmlSerializer, TagNode}
@@ -93,6 +93,13 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
   }
 
 
+  def addWordToTrain(word:String): Unit ={
+    val writer = new PrintWriter(new FileOutputStream(new File("Files\\DictRetrain.txt"),true))
+    writer.write(word+'\n')
+    writer.close()
+    println("Train: "+word)
+  }
+
   def removeAds(url: String) = //: String =
   {
     //Model.loadModel
@@ -139,7 +146,10 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
 
   def testClassifier(): Unit ={
     val nrOfModels = 500;
-    //Model.loadModel
+    val retrainParam= 5;
+    val f= new PrintWriter(new File("Files\\DictRetrain.txt"))
+    f.close()
+    Model.loadModel
     val TP = 0;
     val FP = 1;
     val FN = 2;
@@ -148,7 +158,12 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
     val parser: SiteParser = new SiteParser
     val results = Array.ofDim[Int](scala.io.Source.fromFile(filename).getLines.size, 4)
     var i:Int = 0;
+    results(i)(TP)=0;
+    results(i)(FN)=0;
+    results(i)(FP)=0;
+    results(i)(TN)=0;
     for (line <- scala.io.Source.fromFile(filename).getLines) {
+      var diffSum=0;
       println(line)
       //println("getDiv")
       val examples = parser.getDivTextsFromFile("TestPages\\" + line + ".html")
@@ -162,20 +177,25 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
           else
             votesAgainst += 1
         }
-        //println(votesFor, votesAgainst)
-        val dec =votesFor > votesAgainst
+        println(votesFor, votesAgainst,elem._2)
+        val diff = votesFor -votesAgainst
+        diffSum+=Math.abs(diff)
+        val dec =diff>(-1*(nrOfModels/5))
         if(dec) {
           if(elem._2)
           results(i)(TP)+=1
           else
             results(i)(FP)+=1
-        }
+        }else
         if(elem._2)
           results(i)(FN)+=1
         else
           results(i)(TN)+=1
       }
       i +=1
+      //println((diffSum/(examples.size)))
+      if((diffSum/(examples.size))<(nrOfModels/retrainParam))
+        addWordToTrain(line)
     }
     for(x <-results){
       x.foreach(y=> print(y+" "))
@@ -183,7 +203,6 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
     }
     results.foreach(x => x.foreach(y => print(y+" ")))
   }
-
 
   override def receive = {
     case "test"=> testClassifier()

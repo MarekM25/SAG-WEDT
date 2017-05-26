@@ -134,7 +134,7 @@ class TreeCreator extends Actor {
     val loaddata = loadDataFromString(fileData)
     val data = createVector(loaddata)
     var tree: InputMappedClassifier = new InputMappedClassifier()
-    tree.setClassifier(new RandomTree)
+    tree.setClassifier(new NaiveBayes)
     tree.setSuppressMappingReport(true)
     //println(data)
     tree.buildClassifier(data)
