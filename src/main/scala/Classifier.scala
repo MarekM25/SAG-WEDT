@@ -14,29 +14,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
   * Created by Kamil on 16.04.2017.
   */
-class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
-  //  def predict(location: String, tree: InputMappedClassifier): Boolean = {
-  //    val inputData = loadData(location)
-  //    val input = createVector(inputData)
-  //    //println(input.get(0))
-  //    //val mappedClassifier: InputMappedClassifier = new InputMappedClassifier()
-  //    //mappedClassifier.setClassifier(tree)
-  //    //mappedClassifier.constructMappedInstance(input.get(0))
-  //    //weka.core.SerializationHelper.write("Files\\tree.model",tree)
-  //    //mappedClassifier.setModelPath("Files\\tree.model")
-  //    //mappedClassifier.buildClassifier(input)
-  //    //println(mappedClassifier.getOptions.foreach(print))
-  //    //println(tree.classifyInstance(input.get(0)))
-  //    //println(mappedClassifier)
-  //    //println(tree.classifyInstance(input.get(0)))
-  //    val addRate = 0.5
-  //    val vote = tree.classifyInstance(input.get(0))
-  //    println(vote)
-  //    if (vote < addRate)
-  //      false
-  //    else
-  //      true
-  //  }
+class MyClassifier (TrainingDispacher : ActorRef) extends UCCreator {
 
   override def createVector(data: Instances) = {
     /*
@@ -60,11 +38,6 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
     tokenizer.setNGramMinSize(1)
     tokenizer.setNGramMaxSize(2) //Można ustalać długość n-gramów
     stwv.setTokenizer(tokenizer)
-    //tokenizer.tokenize(input)
-    //val stream:InputStream  = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-    //val ds: DataSource = new DataSource(input)
-    //var data: Instances = ds.getDataSet()
-    //data.toArray.foreach(x => println(x))
     val nominalToString: NominalToString = new NominalToString()
     nominalToString.setInputFormat(data)
     nominalToString.setOptions(Array("-C", "first"))
@@ -72,8 +45,6 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
     stwv.setInputFormat(dataStr)
     val newData: Instances = weka.filters.Filter.useFilter(dataStr, stwv)
     //println(newData)
-    //newData.toArray.foreach(x => println(x))
-    //newData.insertAttributeAt(newData.attribute(0).copy("class2"),newData.numAttributes()) //Do rozważenia przy próbie przenoszenia klasy na koniec
     newData.setClassIndex(0)
     newData
   }
@@ -96,7 +67,7 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
   def removeAds(url: String) = //: String =
   {
     //Model.loadModel
-    val trees = Model.getNRandomClassifiers(500)
+    val ucs = Model.getNRandomClassifiers(500)
     //println(x)
     val parser = new SiteParser()
 
@@ -107,7 +78,7 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
     for (elem <- elements) {
       var votesFor : Int = 0
       var votesAgainst : Int = 0
-      for (t <- trees) {
+      for (t <- ucs) {
         if (predict(elem._1, t) == true)
           votesFor += 1
         else
@@ -127,12 +98,12 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
     val props = new CleanerProperties();
     val htmlSerializer = new SimpleHtmlSerializer(props);
     var str = htmlSerializer.getAsString(rootNode);
-    new PrintWriter("ClearPages\\somename_clean.html") {
+    new PrintWriter("ClearPages\\cleanpage.html") {
       write(str); close
     }
-    var dif = results.map{trees.size - 2*_._1}
+    var dif = results.map{ucs.size - 2*_._1}
     dif = dif.map(math.abs(_))
-    if(dif.reduceLeft(_ + _)/dif.length <= trees.size/5)
+    if(dif.reduceLeft(_ + _)/dif.length <= ucs.size/5)
       TrainingDispacher ! url
     //str
   }
@@ -152,11 +123,11 @@ class MyClassifier (TrainingDispacher : ActorRef) extends TreeCreator {
       println(line)
       //println("getDiv")
       val examples = parser.getDivTextsFromFile("TestPages\\" + line + ".html")
-      val trees = Model.getNRandomClassifiers(nrOfModels)
+      val ucs = Model.getNRandomClassifiers(nrOfModels)
       for (elem <- examples) {
         var votesFor = 0
         var votesAgainst = 0
-        for (t <- trees) {
+        for (t <- ucs) {
           if (predict(elem._1, t) == true)
             votesFor += 1
           else

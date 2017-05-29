@@ -23,7 +23,7 @@ object Model {
     writer.write(String.valueOf(models.size))
     writer.close()
     weka.core.SerializationHelper.write("Files\\Models\\classifier" + (models.size - 1) + ".model", models(models.size - 1))
-    println(models.size)
+    //println(models.size)
   }
 
   def printModels(): Unit = {

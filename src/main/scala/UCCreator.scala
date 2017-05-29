@@ -3,7 +3,6 @@ import java.util
 import akka.actor.Actor
 import weka.classifiers.bayes.NaiveBayes
 import weka.classifiers.misc.InputMappedClassifier
-import weka.classifiers.trees.RandomTree
 import weka.core.converters.ConverterUtils.DataSource
 import weka.core.stemmers.LovinsStemmer
 import weka.core.stopwords.WordsFromFile
@@ -16,15 +15,7 @@ import weka.filters.unsupervised.attribute.{NominalToString, StringToWordVector}
   * Created by Kamil on 12.04.2017.
   */
 
-//class VectorCreator extends Actor {
-//
-//  }
-//  def receive = {
-//    case text: String => createVector(text)
-//  }
-//}
-
-class TreeCreator extends Actor {
+class UCCreator extends Actor {
 
   def createVector(data: Instances) = {
     /*
@@ -42,26 +33,17 @@ class TreeCreator extends Actor {
     stwv.setStemmer(stemmer)
     stwv.setTFTransform(false)
     stwv.setIDFTransform(false)
-    //println(stwv.getOptions.foreach(print))
 
     var tokenizer: NGramTokenizer = new NGramTokenizer()
     tokenizer.setNGramMinSize(1)
     tokenizer.setNGramMaxSize(2) //Można ustalać długość n-gramów
     stwv.setTokenizer(tokenizer)
-    //tokenizer.tokenize(input)
-    //val stream:InputStream  = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-    //val ds: DataSource = new DataSource(input)
-    //var data: Instances = ds.getDataSet()
-    //data.toArray.foreach(x => println(x))
     val nominalToString: NominalToString = new NominalToString()
     nominalToString.setInputFormat(data)
     nominalToString.setOptions(Array("-C", "first"))
     val dataStr: Instances = weka.filters.Filter.useFilter(data, nominalToString)
     stwv.setInputFormat(dataStr)
     val newData: Instances = weka.filters.Filter.useFilter(dataStr, stwv)
-    //println(newData)
-    //newData.toArray.foreach(x => println(x))
-    //newData.insertAttributeAt(newData.attribute(0).copy("class2"),newData.numAttributes()) //Do rozważenia przy próbie przenoszenia klasy na koniec
     newData.setClassIndex(0)
     newData
   }
@@ -76,8 +58,6 @@ class TreeCreator extends Actor {
     var instanceValue1: Array[Double] = new Array[Double](1)
     instanceValue1(0) = data.attribute(0).addStringValue(input)
     data.add(new DenseInstance(1.0, instanceValue1));
-    //inputArray.foreach(in =>addTodata(in));
-    //data.setClassIndex(1)
     data
   }
 
@@ -129,42 +109,33 @@ class TreeCreator extends Actor {
     data
   }
 
-  def createTree(fileData : Array[(String, Boolean)]) = {
+  def createUC(fileData : Array[(String, Boolean)]) = {
     //fileData.foreach(x => println(x._1,x._2))
     val loaddata = loadDataFromString(fileData)
     val data = createVector(loaddata)
-    var tree: InputMappedClassifier = new InputMappedClassifier()
-    tree.setClassifier(new RandomTree)
-    tree.setSuppressMappingReport(true)
+    var uc: InputMappedClassifier = new InputMappedClassifier()
+    uc.setClassifier(new NaiveBayes)
+    uc.setSuppressMappingReport(true)
     //println(data)
-    tree.buildClassifier(data)
+    uc.buildClassifier(data)
     //var eval: Evaluation = new Evaluation(data)
-    //println(tree)
-    tree
+    //println(uc)
+    uc
   }
 
-  def createTreeFromFile(location: String) = {
+  def createUCFromFile(location: String) = {
     val fileData = loadDataFromFile(location).toArray[(String, Boolean)]
-    createTree(fileData)
+    createUC(fileData)
   }
 
-  def createTreeFromUrl(url: String) = {
+  def createUCFromUrl(url: String) = {
     val fileData = loadDataFromUrl(url).toArray[(String, Boolean)]
-    createTree(fileData)
+    createUC(fileData)
   }
-
-//  def createTree(inputArray: Array[(String, Boolean)]) = {
-//    var data = loadDataFromString(inputArray)
-//    var tree: InputMappedClassifier = new InputMappedClassifier()
-//    tree.setClassifier(new RandomTree())
-//    tree.buildClassifier(data)
-//    var eval: Evaluation = new Evaluation(data)
-//    tree
-//  }
 
   def receive = {
-    case location: String => sender() ! createTreeFromFile(location) //Odsyłamy nadawcy
-    case ("url", url:String) => sender() ! createTreeFromUrl(url) //Odsyłamy nadawcy
+    case location: String => sender() ! createUCFromFile(location) //Odsyłamy nadawcy
+    case ("url", url:String) => sender() ! createUCFromUrl(url) //Odsyłamy nadawcy
     //case input: Array[(String,Boolean)] => sender() ! createTree(input)
   }
 }

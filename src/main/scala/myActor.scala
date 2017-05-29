@@ -10,43 +10,41 @@ import akka.actor.{Actor, ActorSystem, Props}
   * Created by Kamil on 28.03.2017.
   */
 
-object treeCreators {
-  @volatile var tcs = new ArrayBuffer[(ActorRef, Boolean, Long)]
+object UCCreators {
+  var uccs = new ArrayBuffer[(ActorRef, Boolean, Long)]
 
   def check = {
-    for (i <- tcs.indices)
-      if(tcs(i)._2 == false && tcs(i)._3 + (5 * 60 * 1000) < System.currentTimeMillis)
-        tcs(i) = (tcs(i)._1, true, 0)
+    for (i <- uccs.indices)
+      if(uccs(i)._2 == false && uccs(i)._3 + (5 * 60 * 1000) < System.currentTimeMillis)
+        uccs(i) = (uccs(i)._1, true, 0)
   }
 }
 
 object listOfPages {
-  @volatile var lst = new ListBuffer[String]
-  @volatile var urllst = new ListBuffer[String]
+  var lst = new ListBuffer[String]
+  var urllst = new ListBuffer[String]
 }
 
-class TrainingDispacher(nTreeCreators: Int) extends Actor {
+class TrainingDispacher(nUCCreators: Int) extends Actor {
 
-  val nActors = nTreeCreators
-  for (i <- 1 to nActors)
-    treeCreators.tcs += ((context.actorOf(Props[TreeCreator], name = "treeCreator"+i), true, 0))
-  //val treeGatherer = context.actorOf(Props[TrainingGatherer], name = "treeGatherer")
+  for (i <- 1 to nUCCreators)
+    UCCreators.uccs += ((context.actorOf(Props[UCCreator], name = "UCCreator"+i), true, 0))
 
-  def buildNewTreesOnDict = {
+  def buildNewUCsOnDict = {
     val filename = "Files\\SearchDict.txt"
     for (line <- scala.io.Source.fromFile(filename).getLines) {
       listOfPages.lst += ("Pages\\" + line + ".html");
     }
-    while (listOfPages.lst.nonEmpty && buildNewTree) {}
+    while (listOfPages.lst.nonEmpty && buildNewUC) {}
   }
 
-  def buildNewTree : Boolean = {
+  def buildNewUC : Boolean = {
     var ret = false
-    treeCreators.check
-    val idx = treeCreators.tcs.indexWhere(_._2 == true)
+    UCCreators.check
+    val idx = UCCreators.uccs.indexWhere(_._2 == true)
     if (idx != -1) {
-      val tc = treeCreators.tcs(idx)
-      treeCreators.tcs(idx) = (tc._1, false, System.currentTimeMillis)
+      val tc = UCCreators.uccs(idx)
+      UCCreators.uccs(idx) = (tc._1, false, System.currentTimeMillis)
       var s = new String
       if(listOfPages.lst.nonEmpty) {
         s = listOfPages.lst.remove(0)
@@ -61,49 +59,26 @@ class TrainingDispacher(nTreeCreators: Int) extends Actor {
     ret
   }
 
-  def buildNewTreeOnURL(url : String) = {
+  def buildNewUCOnURL(url : String) = {
     listOfPages.urllst += url
-    buildNewTree
+    buildNewUC
   }
 
-  //  def buildNewTreesOnDict = {
-  //    val treeCreator = context.actorOf(Props[TreeCreator], name = "treeCreator")
-  //    val filename = "Files\\SearchDict.txt"
-  //    for (line <- scala.io.Source.fromFile(filename).getLines) {
-  //      //println("Pages\\"+line+".html")
-  //      treeCreator ! ("Pages\\" + line + ".html")
-  //    }
-  //    //    treeCreator ! "Pages\\computer.html"
-  //    //    treeCreator ! "Pages\\shoes.html"
-  //  }
-
   def reciveTree(act: ActorRef, tree: InputMappedClassifier) = {
-    val idx = treeCreators.tcs.indexWhere(_._1 == act)
+    val idx = UCCreators.uccs.indexWhere(_._1 == act)
     if(idx != -1) {
-      treeCreators.tcs(idx) = (treeCreators.tcs(idx)._1, true, 0)
+      UCCreators.uccs(idx) = (UCCreators.uccs(idx)._1, true, 0)
       if(listOfPages.lst.nonEmpty || listOfPages.urllst.nonEmpty)
-        buildNewTree
+        buildNewUC
+      else
+        println(System.currentTimeMillis)
     }
     Model.addAndSave(tree)
   }
 
   def receive = {
-    //case x: InputMappedClassifier => reciveTree(sender(), x)
-    //    {
-    //      //print(x)
-    //      val s = sender
-    //      val tc = treeCreators
-    //      val idx = treeCreators.tcs.indexWhere(_._1 == sender)
-    //      if(idx != -1)
-    //        treeCreators.tcs(idx) = (treeCreators.tcs(idx)._1, true)
-    //      Model.addAndSave(x)
-    //      //Model.saveModel
-    //    }
-    //val predictor = context.actorOf(Props[MyClassifier], name= "Classifier")
-    //predictor ! ("Discount Laptops now here low prices free shipping",x)}
-    case "start" => buildNewTreesOnDict
-    case url : String => buildNewTreeOnURL(url)
-    case y: Boolean => println(y)
+    case "start" => buildNewUCsOnDict
+    case url : String => buildNewUCOnURL(url)
     case x: InputMappedClassifier => reciveTree(sender(), x)
 
   }
@@ -113,37 +88,32 @@ object Main extends App {
 
   def createModel(): Unit = {
     //Tworzenie modelu na podstawie słownika
-    treeActor ! "start"
+    trainingActor ! "start"
   }
 
   // turn off html unit warnings
   java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(java.util.logging.Level.OFF)
   System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
-  val system = ActorSystem("HelloSystem")
-  val treeActor = system.actorOf(Props(new TrainingDispacher(20)), name = "treeActor")
-  createModel();//Funkcja do tworzenia modelu
+  val system = ActorSystem("AdBlockSystem")
+  val trainingActor = system.actorOf(Props(new TrainingDispacher(32)), name = "trainingActor")
+  println(System.currentTimeMillis)
+  //createModel();//Funkcja do tworzenia modelu
 
-//  Model.loadModel
-//  //loads model from files stored at /Files/Models/...
-//  val classifier = system.actorOf(Props(new MyClassifier(treeActor)), name = "classifier")
-//
-//
-//  while(true){
-//    println("Podaj slowo do wyszukania")
-//    val word = scala.io.StdIn.readLine()
-//    classifier ! "https://search.yahoo.com/search;?p="+word
-//  }
-//  ///val filename = "Files\\computer.html"
-//  //for (line <- scala.io.Source.fromFile(filename).getLines) {
-//  //val helloActor = system.actorOf(Props[TreeCreator])
-//
-//  //}
+  Model.loadModel
+  //loads model from files stored at /Files/Models/...
+  val classifier = system.actorOf(Props(new MyClassifier(trainingActor)), name = "classifier")
+
+  while(true){
+    println("Podaj slowo do wyszukania")
+    val word = scala.io.StdIn.readLine()
+    classifier ! "https://search.yahoo.com/search;?p="+word
+  }
 }
 
 object TestModel extends App {
   val system = ActorSystem("HelloSystem")
-  val treeActor = system.actorOf(Props(new TrainingDispacher(20)), name = "treeActor")
-  treeActor ! "start"
-  val classifier = system.actorOf(Props (new MyClassifier(treeActor)), name = "trainingActor")
+  val trainingActor = system.actorOf(Props(new TrainingDispacher(20)), name = "trainingActor")
+  trainingActor ! "start"
+  val classifier = system.actorOf(Props (new MyClassifier(trainingActor)), name = "trainingActor")
   classifier ! "test"
 }
